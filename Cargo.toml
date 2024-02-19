@@ -1,3 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["core"]
+members = ["core", "crepedb", "tool"]
+
+[workspace.dependencies]
+crepedb-core = { path = "core", version = "0.1" }

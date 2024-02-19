@@ -1,49 +1,41 @@
-use core::fmt::Display;
+use core::fmt::{Debug, Display};
 
-pub trait Backend<K, V>: Sized + 'static {
+use alloc::vec::Vec;
+
+pub trait Backend: Sized + 'static {
     type Error: BackendError;
 
-    type ReadTxn<'a>: ReadTxn<K, V, Self::Error>;
+    type ReadTxn<'a>: ReadTxn<Self::Error>;
 
-    type WriteTxn<'a>: WriteTxn<K, V, Self::Error>;
+    type WriteTxn<'a>: WriteTxn<Self::Error>;
 
     fn open_db(path: &str) -> Result<Self, Self::Error>;
+
+    fn open_readonly(path: &str) -> Result<Self, Self::Error>;
 
     fn read_txn(&self) -> Result<Self::ReadTxn<'_>, Self::Error>;
 
     fn write_txn(&self) -> Result<Self::WriteTxn<'_>, Self::Error>;
 }
 
-pub trait BackendError: Display {}
+pub trait BackendError: Debug + Display + 'static {}
 
-pub trait ReadTxn<K, V, E> {
-    type Range<'a>: Range<V, E>
+pub trait ReadTxn<E> {
+    type Range<'a>: Range<E>
     where
         Self: 'a;
 
-    type Table<'a>
-    where
-        Self: 'a;
+    fn get(&self, table: &str, key: &[u8]) -> Result<Option<Vec<u8>>, E>;
 
-    fn open_table(&self) -> Result<Self::Table<'_>, E>;
-
-    fn get(&self, table: Self::Table<'_>, key: K) -> Result<V, E>;
-
-    fn range(&self) -> Result<Self::Range<'_>, E>;
+    fn range(&self, table: &str) -> Result<Self::Range<'_>, E>;
 }
 
-pub trait WriteTxn<K, V, E> {
-    type Table<'a>
-    where
-        Self: 'a;
-
-    fn open_table(&self) -> Result<Self::Table<'_>, E>;
-
-    fn set(&self, table: Self::Table<'_>, key: K) -> Result<V, E>;
+pub trait WriteTxn<E>: ReadTxn<E> {
+    fn set(&self, table: &str, key: &[u8]) -> Result<Vec<u8>, E>;
 
     fn commit(self) -> Result<(), E>;
 }
 
-pub trait Range<V, E> {
-    fn next(&self) -> Result<V, E>;
+pub trait Range<E> {
+    fn next(&self) -> Result<(Vec<u8>, Vec<u8>), E>;
 }
