@@ -1,7 +1,10 @@
 use alloc::vec::Vec;
-use crepedb_core::{backend::Backend, SnapshotId};
+use crepedb_core::{
+    backend::{Backend, WriteTxn},
+    SnapshotId,
+};
 
-use crate::{utils, Error, Result};
+use crate::{utils, DataOp, Error, Result};
 
 pub struct VersionedWriteTxn<'a, B>
 where
@@ -82,17 +85,29 @@ where
         })
     }
 
-    pub fn set(&self, key: Vec<u8>, value: Vec<u8>) -> Result<()> {
+    pub fn set(&self, table: &str, key: Vec<u8>, value: Vec<u8>) -> Result<()> {
+        let key = self.build_key(key);
+        let value = DataOp::Set(value).to_bytes();
+
+        self.txn.set(table, &key, &value).map_err(Error::backend)?;
+
         Ok(())
     }
 
-    pub fn remove(&self, key: Vec<u8>) -> Result<()> {
+    pub fn remove(&self, table: &str, key: Vec<u8>) -> Result<()> {
+        let key = self.build_key(key);
+        let value = DataOp::Del.to_bytes();
+
+        self.txn.set(table, &key, &value).map_err(Error::backend)?;
+
         Ok(())
+    }
+
+    fn build_key(&self, key: Vec<u8>) -> Vec<u8> {
+        utils::build_key(key, self.version, &self.snapshot_id)
     }
 
     pub fn commit(self) -> Result<()> {
-        use crepedb_core::backend::WriteTxn;
-
         if self.is_new_fork {
             let mut forks_bytes = self.forks_bytes;
 
