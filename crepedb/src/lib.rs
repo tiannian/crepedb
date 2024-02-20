@@ -10,3 +10,6 @@ pub use versioned::*;
 
 mod error;
 pub use error::*;
+
+mod types;
+pub use types::*;

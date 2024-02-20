@@ -31,7 +31,7 @@ pub trait ReadTxn<E> {
 }
 
 pub trait WriteTxn<E>: ReadTxn<E> {
-    fn set(&self, table: &str, key: &[u8]) -> Result<Vec<u8>, E>;
+    fn set(&self, table: &str, key: &[u8], value: &[u8]) -> Result<(), E>;
 
     fn commit(self) -> Result<(), E>;
 }

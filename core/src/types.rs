@@ -1,4 +1,13 @@
+use core::fmt::Display;
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SnapshotId([u8; 32]);
+
+impl Display for SnapshotId {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.write_str(&hex::encode(self.0))
+    }
+}
 
 impl From<[u8; 32]> for SnapshotId {
     fn from(value: [u8; 32]) -> Self {
