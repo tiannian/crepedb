@@ -1,11 +1,13 @@
 use alloc::boxed::Box;
 
-use crate::backend::BackendError;
+use crate::{backend::BackendError, SnapshotId};
 
 #[derive(Debug)]
 pub enum Error {
-    MissingKey,
+    MissingSnaopshot(SnapshotId),
     WrongBytesLength(usize),
+    UnexpectedTableType(u8),
+    MissingTable,
 
     BackendError(Box<dyn BackendError>),
 }

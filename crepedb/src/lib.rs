@@ -15,3 +15,5 @@ pub use write::*;
 
 mod error;
 pub use error::*;
+
+pub(crate) mod utils;
