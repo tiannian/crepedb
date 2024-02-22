@@ -1,3 +1,4 @@
+pub mod index;
 pub mod snapshot;
 pub mod table;
 

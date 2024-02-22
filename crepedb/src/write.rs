@@ -89,6 +89,12 @@ where
         )?;
 
         // build index
+        utils::index::write(
+            &self.txn,
+            &self.new_snapshot_id,
+            &self.parent_snapshot_id,
+            self.version,
+        )?;
 
         self.txn.commit().map_err(Error::backend)?;
 
