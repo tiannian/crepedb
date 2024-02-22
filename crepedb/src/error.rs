@@ -1,5 +1,6 @@
 use alloc::boxed::Box;
-use crepedb_core::backend::BackendError;
+
+use crate::backend::BackendError;
 
 #[derive(Debug)]
 pub enum Error {
