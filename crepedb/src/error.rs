@@ -8,6 +8,7 @@ pub enum Error {
     WrongBytesLength(usize),
     UnexpectedTableType(u8),
     MissingTable,
+    WrongSnapshotIdMustBeCommon,
 
     BackendError(Box<dyn BackendError>),
 }

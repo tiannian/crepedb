@@ -5,7 +5,7 @@ use crate::{
     Error, Result, SnapshotId,
 };
 
-use super::{consts, snapshot};
+use super::consts;
 
 pub fn read<T, E>(txn: &T, snapshot: &SnapshotId, n: u32) -> Result<Option<SnapshotId>>
 where

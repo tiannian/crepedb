@@ -43,3 +43,19 @@ where
 
     Ok(())
 }
+
+pub fn read_next_snapshot_id<T, E>(txn: &T) -> Result<SnapshotId>
+where
+    T: WriteTxn<E>,
+    E: BackendError,
+{
+    let bytes = txn
+        .get(consts::SNAPSHOT_TABLE, consts::SNAPSHOT_NEXT_KEY)
+        .map_err(Error::backend)?;
+
+    if let Some(bytes) = bytes {
+        Ok(SnapshotId::from_bytes(&bytes)?)
+    } else {
+        Ok(SnapshotId::root())
+    }
+}
