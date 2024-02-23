@@ -61,7 +61,7 @@ impl SnapshotId {
         Ok(Self(r))
     }
 
-    pub const fn unknown() -> Self {
+    pub const fn preroot() -> Self {
         Self(0)
     }
 

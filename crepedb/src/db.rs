@@ -27,7 +27,7 @@ where
     pub fn write(&self, snapshot_id: SnapshotId) -> Result<WriteTxn<'_, B>> {
         let txn = self.backend.write_txn().map_err(Error::backend)?;
 
-        if snapshot_id == SnapshotId::root() || snapshot_id == SnapshotId::unknown() {
+        if snapshot_id == SnapshotId::root() || snapshot_id == SnapshotId::preroot() {
             return Err(Error::WrongSnapshotIdMustBeCommon);
         }
 
