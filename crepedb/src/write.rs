@@ -8,7 +8,8 @@ use crate::{
 pub struct WriteTxn<'a, B: Backend> {
     pub(crate) txn: B::WriteTxn<'a>,
 
-    pub(crate) parent_snapshot_id: SnapshotId,
+    // None if write to root nodr
+    pub(crate) parent_snapshot_id: Option<SnapshotId>,
     pub(crate) snapshot_id: SnapshotId,
     pub(crate) new_snapshot_id: SnapshotId,
     pub(crate) version: u64,
@@ -88,13 +89,18 @@ where
             self.version,
         )?;
 
-        // build index
-        utils::index::write(
-            &self.txn,
-            &self.new_snapshot_id,
-            &self.parent_snapshot_id,
-            self.version,
-        )?;
+        // write next snapshot id
+        utils::snapshot::write_next_snapahot(&self.txn, &self.new_snapshot_id)?;
+
+        if let Some(parent_snapshot_id) = self.parent_snapshot_id {
+            // build index
+            utils::index::write(
+                &self.txn,
+                &self.new_snapshot_id,
+                &parent_snapshot_id,
+                self.version,
+            )?;
+        }
 
         self.txn.commit().map_err(Error::backend)?;
 

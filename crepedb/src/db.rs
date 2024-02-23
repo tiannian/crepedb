@@ -11,10 +11,6 @@ where
     pub fn open(path: &str) -> Result<Self> {
         let backend = B::open_db(path).map_err(Error::backend)?;
 
-        // TODO: Check db is init, If not init it.
-        //
-        // Create Fake Root.
-
         Ok(Self { backend })
     }
 
@@ -27,21 +23,34 @@ where
     pub fn write(&self, snapshot_id: SnapshotId) -> Result<WriteTxn<'_, B>> {
         let txn = self.backend.write_txn().map_err(Error::backend)?;
 
-        if snapshot_id == SnapshotId::root() || snapshot_id == SnapshotId::preroot() {
-            return Err(Error::WrongSnapshotIdMustBeCommon);
+        if snapshot_id == SnapshotId::preroot() {
+            // Create root.
+            // Need check already have root?
+
+            if utils::snapshot::has(&txn, &snapshot_id)? {
+                return Err(Error::OnlySupportOneRoot);
+            }
+
+            Ok(WriteTxn {
+                txn,
+                version: 0,
+                new_snapshot_id: SnapshotId::root(),
+                parent_snapshot_id: None,
+                snapshot_id,
+            })
+        } else {
+            let (version, parent_snapshot_id) = utils::snapshot::read(&txn, &snapshot_id)?;
+
+            let new_snapshot_id = utils::snapshot::read_next_snapshot_id(&txn)?;
+
+            Ok(WriteTxn {
+                txn,
+                version: version + 1,
+                new_snapshot_id,
+                parent_snapshot_id: Some(parent_snapshot_id),
+                snapshot_id,
+            })
         }
-
-        let (version, parent_snapshot_id) = utils::snapshot::read(&txn, &snapshot_id)?;
-
-        let new_snapshot_id = utils::snapshot::read_next_snapshot_id(&txn)?;
-
-        Ok(WriteTxn {
-            txn,
-            version: version + 1,
-            new_snapshot_id,
-            parent_snapshot_id,
-            snapshot_id,
-        })
     }
 
     pub fn create_table(&self, table: &str, ty: &TableType) -> Result<()> {

@@ -23,6 +23,17 @@ where
     Ok((r, s))
 }
 
+pub fn has<T, E>(txn: &T, snapshot_id: &SnapshotId) -> Result<bool>
+where
+    T: ReadTxn<E>,
+    E: BackendError,
+{
+    let bytes = txn
+        .get(consts::SNAPSHOT_TABLE, &snapshot_id.to_bytes())
+        .map_err(Error::backend)?;
+    Ok(bytes.is_some())
+}
+
 pub fn write<T, E>(
     txn: &T,
     snapshot_id: &SnapshotId,
@@ -58,4 +69,21 @@ where
     } else {
         Ok(SnapshotId::root())
     }
+}
+
+pub fn write_next_snapahot<T, E>(txn: &T, snapshot_id: &SnapshotId) -> Result<()>
+where
+    T: WriteTxn<E>,
+    E: BackendError,
+{
+    let snapshot = SnapshotId(snapshot_id.0 + 1);
+
+    txn.set(
+        consts::SNAPSHOT_TABLE,
+        consts::SNAPSHOT_NEXT_KEY,
+        &snapshot.to_bytes(),
+    )
+    .map_err(Error::backend)?;
+
+    Ok(())
 }

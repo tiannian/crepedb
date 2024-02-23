@@ -9,6 +9,7 @@ pub enum Error {
     UnexpectedTableType(u8),
     MissingTable,
     WrongSnapshotIdMustBeCommon,
+    OnlySupportOneRoot,
 
     BackendError(Box<dyn BackendError>),
 }
