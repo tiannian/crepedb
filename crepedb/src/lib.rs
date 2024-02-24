@@ -2,6 +2,9 @@
 
 extern crate alloc;
 
+#[cfg(test)]
+extern crate std;
+
 pub mod backend;
 
 mod types;
@@ -16,4 +19,4 @@ pub use write::*;
 mod error;
 pub use error::*;
 
-pub(crate) mod utils;
+pub mod utils;

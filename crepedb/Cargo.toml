@@ -7,3 +7,5 @@ edition = "2021"
 hex.workspace = true
 
 seq-macro.workspace = true
+
+log.workspace = true

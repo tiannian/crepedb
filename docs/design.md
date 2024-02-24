@@ -38,4 +38,65 @@ Snapshot Table use name `__crepe_snapshot`.
 
 ### `Snapshot Index Table`
 
-### `Snapshot Index Table`
+To build index, we use these expression.
+
+- `Vn`: Snapshot with version N.
+- `i(Va, b)`: Index `b` of Snapshot with version `a`.
+- `V0`: Root node.
+
+If snapshot have version `a`, it will have `i = ceil(log2(a))`.
+
+For example:
+
+```
+V0 = (Root Node)
+! = (Empty)
+
+i(V1, 0) = V0
+
+i(V2, 0) = V1
+i(V2, 1) = i(i(V2, 0), 0) = i(V1, 0) = V0
+
+i(V3, 0) = V2
+i(V3, 1) = i(i(V3, 0), 0) = i(V2, 0) = V1
+i(V3, 2) = i(i(V3, 1), 1) = i(V1, 1) = !
+
+i(V4, 0) = V3
+i(V4, 1) = i(i(V4, 0), 0) = i(V3, 0) = V2
+i(V4, 2) = i(i(V4, 1), 1) = i(V2, 1) = V0
+
+i(V5, 0) = V4
+i(V5, 1) = i(i(V5, 0), 0) = i(V4, 0) = V3
+i(V5, 2) = i(i(V5, 1), 1) = i(V3, 1) = V1
+i(V5, 3) = i(i(V5, 2), 2) = i(V1, 2) = !
+
+i(V6, 0) = V5
+i(V6, 1) = i(i(V6, 0), 0) = i(V5, 0) = V4
+i(V6, 2) = i(i(V6, 1), 1) = i(V4, 1) = V2
+i(V6, 3) = i(i(V6, 2), 2) = i(V2, 2) = !
+
+i(V7, 0) = V6
+i(V7, 1) = i(i(V7, 0), 0) = i(V6, 0) = V5
+i(V7, 2) = i(i(V7, 1), 1) = i(V5, 1) = V3
+i(V7, 3) = i(i(V7, 2), 2) = i(V3, 2) = !
+
+
+i(V8, 0) = V7
+i(V8, 1) = i(i(V8, 0), 0) = i(V7, 0) = V6
+i(V8, 2) = i(i(V8, 1), 1) = i(V6, 1) = V4
+i(V8, 3) = i(i(V8, 2), 2) = i(V4, 2) = 0
+
+
+i(V9, 0) = V8
+i(V9, 1) = i(i(V9, 0), 0) = i(V8, 0) = V7
+i(V9, 2) = i(i(V9, 1), 1) = i(V7, 1) = V6
+i(V9, 3) = i(i(V9, 2), 2) = i(V6, 2) = V2
+i(V9, 4) = i(i(V9, 3), 3) = i(V2, 2) = !
+
+i(V10, 0) = V9
+i(V10, 1) = i(i(V10, 0), 0) = i(V9, 0) = V8
+i(V10, 2) = i(i(V10, 1), 1) = i(V8, 1) = V6
+i(V10, 3) = i(i(V10, 2), 2) = i(V6, 2) = V2
+i(V10, 4) = i(i(V10, 3), 3) = i(V2, 2) = !
+```
+

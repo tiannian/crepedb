@@ -10,6 +10,7 @@ pub enum Error {
     MissingTable,
     WrongSnapshotIdMustBeCommon,
     OnlySupportOneRoot,
+    FatelMissingInnerIndex,
 
     BackendError(Box<dyn BackendError>),
 }

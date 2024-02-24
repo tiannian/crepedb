@@ -2,6 +2,7 @@ use alloc::vec::Vec;
 
 use crate::{
     backend::{BackendError, ReadTxn, WriteTxn},
+    utils::fast_ceil_log2,
     Error, Result, SnapshotId,
 };
 
@@ -50,22 +51,33 @@ where
     T: WriteTxn<E>,
     E: BackendError,
 {
-    let step = version.ilog2() + 1;
+    debug_assert!(version >= 1);
 
-    // insert k1;
-    write_index(txn, snapshot, 1, k1)?;
+    let step = fast_ceil_log2(version - 1);
 
-    let mut offset = k1.clone();
+    if step == 0 {
+        return Ok(());
+    }
 
-    // insert kn, n > 1
-    for i in 2..step {
-        let ki_1 = read(txn, &offset, i - 1)?;
-
-        if let Some(ki_1) = ki_1 {
-            write_index(txn, snapshot, i, &ki_1)?;
-            offset = ki_1;
+    // Inser kn, n > 1
+    for i in 1..step {
+        if i == 1 {
+            log::debug!("Insert version {version}, index 1");
+            write_index(txn, snapshot, 1, k1)?;
         } else {
-            return Ok(());
+            let ii = i - 1;
+
+            log::debug!("Get `i(V{version}, {ii})`");
+            let ki_1 = read(txn, snapshot, ii)?.ok_or(Error::FatelMissingInnerIndex)?;
+
+            log::debug!("Get `i(i(V{version}, {ii}), {ii})`");
+            let ki_1 = read(txn, &ki_1, ii)?;
+
+            if let Some(ki_1) = ki_1 {
+                write_index(txn, snapshot, i, &ki_1)?;
+            } else {
+                return Ok(());
+            }
         }
     }
 

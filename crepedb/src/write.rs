@@ -93,6 +93,7 @@ where
         utils::snapshot::write_next_snapahot(&self.txn, &self.new_snapshot_id)?;
 
         if let Some(parent_snapshot_id) = self.parent_snapshot_id {
+            // Must not be root
             // build index
             utils::index::write(
                 &self.txn,
