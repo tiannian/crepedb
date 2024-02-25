@@ -2,6 +2,8 @@ use alloc::{vec, vec::Vec};
 
 use crate::{utils, Error, Result};
 
+pub type Bytes = Vec<u8>;
+
 pub enum DataOp {
     Set(Vec<u8>),
     Del,

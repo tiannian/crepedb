@@ -1,14 +1,11 @@
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
-}
+use std::collections::BTreeMap;
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+use crepedb::Bytes;
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
+pub struct CrepeMemoryBackend {
+    kv: BTreeMap<Bytes, BTreeMap<Bytes, Bytes>>,
+
+    meta: BTreeMap<Bytes, Bytes>,
+    snapshot: BTreeMap<Bytes, Bytes>,
+    index: BTreeMap<Bytes, Bytes>,
 }
