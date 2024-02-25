@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["crepedb", "redb", "tool"]
+members = ["crepedb", "mem", "redb", "tool"]
 
 [workspace.dependencies]
 log = "0.4.20"
