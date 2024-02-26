@@ -1,6 +1,6 @@
 use core::fmt::{Debug, Display};
 
-use alloc::vec::Vec;
+use crate::Bytes;
 
 pub trait Backend: Sized + 'static {
     type Error: BackendError;
@@ -25,9 +25,9 @@ pub trait ReadTxn<E> {
     where
         Self: 'a;
 
-    fn get(&self, table: &str, key: &[u8]) -> Result<Option<Vec<u8>>, E>;
+    fn get(&self, table: &str, key: &[u8]) -> Result<Option<Bytes>, E>;
 
-    fn range(&self, table: &str) -> Result<Self::Range<'_>, E>;
+    fn range(&self, table: &str, begin: &[u8], end: &[u8]) -> Result<Self::Range<'_>, E>;
 }
 
 pub trait WriteTxn<E>: ReadTxn<E> {
@@ -39,5 +39,5 @@ pub trait WriteTxn<E>: ReadTxn<E> {
 }
 
 pub trait Range<E> {
-    fn next(&self) -> Result<(Vec<u8>, Vec<u8>), E>;
+    fn next(&mut self) -> Result<Option<(Bytes, Bytes)>, E>;
 }
