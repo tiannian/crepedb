@@ -21,6 +21,24 @@ pub trait Backend: Sized + 'static {
 pub trait BackendError: Debug + Display + 'static {}
 
 pub trait ReadTxn<E> {
+    type Table<'a>: ReadTable<E>
+    where
+        Self: 'a;
+
+    fn open_table(&self, table: &str) -> Result<Self::Table<'_>, E>;
+}
+
+pub trait WriteTxn<E> {
+    type Table<'a>: WriteTable<E>
+    where
+        Self: 'a;
+
+    fn open_table(&self, table: &str) -> Result<Self::Table<'_>, E>;
+
+    fn commit(self) -> Result<(), E>;
+}
+
+pub trait ReadTable<E> {
     type Range<'a>: Range<E>
     where
         Self: 'a;
@@ -30,14 +48,12 @@ pub trait ReadTxn<E> {
     fn range(&self, table: &str, begin: &[u8], end: &[u8]) -> Result<Self::Range<'_>, E>;
 }
 
-pub trait WriteTxn<E>: ReadTxn<E> {
+pub trait WriteTable<E>: ReadTable<E> {
     fn set(&self, table: &str, key: &[u8], value: &[u8]) -> Result<(), E>;
 
     fn del(&self, table: &str, key: &[u8]) -> Result<(), E>;
-
-    fn commit(self) -> Result<(), E>;
 }
 
 pub trait Range<E> {
-    fn next(&mut self) -> Result<Option<(Bytes, Bytes)>, E>;
+    fn back(&mut self) -> Result<Option<(Bytes, Bytes)>, E>;
 }

@@ -1,7 +1,7 @@
 use alloc::vec::Vec;
 
 use crate::{
-    backend::{BackendError, ReadTxn, WriteTxn},
+    backend::{BackendError, ReadTable, ReadTxn, WriteTable, WriteTxn},
     Error, Result, SnapshotId,
 };
 
@@ -9,7 +9,7 @@ use super::{consts, parse_u64};
 
 pub fn read<T, E>(txn: &T, snapshot_id: &SnapshotId) -> Result<(u64, SnapshotId)>
 where
-    T: ReadTxn<E>,
+    T: ReadTable<E>,
     E: BackendError,
 {
     let bytes = txn
@@ -25,7 +25,7 @@ where
 
 pub fn has<T, E>(txn: &T, snapshot_id: &SnapshotId) -> Result<bool>
 where
-    T: ReadTxn<E>,
+    T: ReadTable<E>,
     E: BackendError,
 {
     let bytes = txn
@@ -41,7 +41,7 @@ pub fn write<T, E>(
     version: u64,
 ) -> Result<()>
 where
-    T: WriteTxn<E>,
+    T: WriteTable<E>,
     E: BackendError,
 {
     let mut value = Vec::with_capacity(16);
@@ -57,7 +57,7 @@ where
 
 pub fn read_next_snapshot_id<T, E>(txn: &T) -> Result<SnapshotId>
 where
-    T: WriteTxn<E>,
+    T: WriteTable<E>,
     E: BackendError,
 {
     let bytes = txn
@@ -73,7 +73,7 @@ where
 
 pub fn write_next_snapahot<T, E>(txn: &T, snapshot_id: &SnapshotId) -> Result<()>
 where
-    T: WriteTxn<E>,
+    T: WriteTable<E>,
     E: BackendError,
 {
     let snapshot = SnapshotId(snapshot_id.0 + 1);

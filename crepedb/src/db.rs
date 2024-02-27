@@ -1,4 +1,7 @@
-use crate::{backend::Backend, utils, Error, Result, SnapshotId, TableType, WriteTxn};
+use crate::{
+    backend::{Backend, WriteTxn},
+    utils, Error, Result, SnapshotId, TableType, WriteTxn,
+};
 
 pub struct CrepeDB<B> {
     pub(crate) backend: B,
@@ -27,7 +30,11 @@ where
             // Create root.
             // Need check already have root?
 
-            if utils::snapshot::has(&txn, &snapshot_id)? {
+            let table = txn
+                .open_table(utils::consts::SNAPSHOT_TABLE)
+                .map_err(Error::backend)?;
+
+            if utils::snapshot::has(&table, &snapshot_id)? {
                 return Err(Error::OnlySupportOneRoot);
             }
 

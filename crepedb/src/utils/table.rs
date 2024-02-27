@@ -1,5 +1,5 @@
 use crate::{
-    backend::{BackendError, ReadTxn, WriteTxn},
+    backend::{BackendError, ReadTable, ReadTxn, WriteTable, WriteTxn},
     Error, Result, TableType,
 };
 
@@ -7,7 +7,7 @@ use super::consts;
 
 pub fn read_type<T, E>(txn: &T, table: &str) -> Result<TableType>
 where
-    T: ReadTxn<E>,
+    T: ReadTable<E>,
     E: BackendError,
 {
     let bytes = txn
@@ -24,13 +24,11 @@ where
 
 pub fn write_type<T, E>(txn: T, table: &str, ty: &TableType) -> Result<()>
 where
-    T: WriteTxn<E>,
+    T: WriteTable<E>,
     E: BackendError,
 {
     txn.set(consts::META_TABLE, table.as_bytes(), &[ty.to_byte()])
         .map_err(Error::backend)?;
-
-    txn.commit().map_err(Error::backend)?;
 
     Ok(())
 }

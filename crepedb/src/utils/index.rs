@@ -1,85 +1,132 @@
+use core::marker::PhantomData;
+
 use alloc::vec::Vec;
 
 use crate::{
-    backend::{BackendError, ReadTxn, WriteTxn},
+    backend::{BackendError, ReadTable, ReadTxn, WriteTable, WriteTxn},
     utils::fast_ceil_log2,
     Error, Result, SnapshotId,
 };
 
 use super::consts;
 
-pub fn read<T, E>(txn: &T, snapshot: &SnapshotId, n: u32) -> Result<Option<SnapshotId>>
+pub struct TableIndex<T, E> {
+    table: T,
+    marker: PhantomData<E>,
+}
+
+pub fn reader<T, E>(txn: &T) -> Result<TableIndex<T::Table<'_>, E>>
 where
     T: ReadTxn<E>,
     E: BackendError,
 {
-    let mut key = Vec::with_capacity(12);
-
-    key.extend_from_slice(&snapshot.to_bytes());
-    key.extend_from_slice(&n.to_le_bytes());
-
-    let bytes = txn
-        .get(consts::SNAPSHOT_INDEX_TABLE, &key)
+    let table = txn
+        .open_table(consts::SNAPSHOT_INDEX_TABLE)
         .map_err(Error::backend)?;
-
-    if let Some(bytes) = bytes {
-        let s = SnapshotId::from_bytes(&bytes)?;
-        Ok(Some(s))
-    } else {
-        Ok(None)
-    }
+    Ok(TableIndex {
+        table,
+        marker: PhantomData,
+    })
 }
 
-pub fn write_index<T, E>(txn: &T, snapshot: &SnapshotId, n: u32, to: &SnapshotId) -> Result<()>
+pub fn writer<T, E>(txn: &T) -> Result<TableIndex<T::Table<'_>, E>>
 where
     T: WriteTxn<E>,
     E: BackendError,
 {
-    let mut key = Vec::with_capacity(12);
-
-    key.extend_from_slice(&snapshot.to_bytes());
-    key.extend_from_slice(&n.to_le_bytes());
-
-    txn.set(consts::SNAPSHOT_INDEX_TABLE, &key, &to.to_bytes())
+    let table = txn
+        .open_table(consts::SNAPSHOT_INDEX_TABLE)
         .map_err(Error::backend)?;
-
-    Ok(())
+    Ok(TableIndex {
+        table,
+        marker: PhantomData,
+    })
 }
 
-pub fn write<T, E>(txn: &T, snapshot: &SnapshotId, k1: &SnapshotId, version: u64) -> Result<()>
+impl<T, E> TableIndex<T, E>
 where
-    T: WriteTxn<E>,
+    T: ReadTable<E>,
     E: BackendError,
 {
-    debug_assert!(version >= 1);
+    pub fn read(&self, snapshot: &SnapshotId, n: u32) -> Result<Option<SnapshotId>> {
+        let mut key = Vec::with_capacity(12);
 
-    let step = fast_ceil_log2(version - 1);
+        key.extend_from_slice(&snapshot.to_bytes());
+        key.extend_from_slice(&n.to_le_bytes());
 
-    if step == 0 {
-        return Ok(());
-    }
+        let bytes = self
+            .table
+            .get(consts::SNAPSHOT_INDEX_TABLE, &key)
+            .map_err(Error::backend)?;
 
-    // Inser kn, n > 1
-    for i in 1..step {
-        if i == 1 {
-            log::debug!("Insert version {version}, index 1");
-            write_index(txn, snapshot, 1, k1)?;
+        if let Some(bytes) = bytes {
+            let s = SnapshotId::from_bytes(&bytes)?;
+            Ok(Some(s))
         } else {
-            let ii = i - 1;
-
-            log::debug!("Get `i(V{version}, {ii})`");
-            let ki_1 = read(txn, snapshot, ii)?.ok_or(Error::FatelMissingInnerIndex)?;
-
-            log::debug!("Get `i(i(V{version}, {ii}), {ii})`");
-            let ki_1 = read(txn, &ki_1, ii)?;
-
-            if let Some(ki_1) = ki_1 {
-                write_index(txn, snapshot, i, &ki_1)?;
-            } else {
-                return Ok(());
-            }
+            Ok(None)
         }
     }
+}
 
-    Ok(())
+impl<T, E> TableIndex<T, E>
+where
+    T: WriteTable<E>,
+    E: BackendError,
+{
+    fn write_index(&self, snapshot: &SnapshotId, n: u32, to: &SnapshotId) -> Result<()>
+    where
+        T: WriteTable<E>,
+        E: BackendError,
+    {
+        let mut key = Vec::with_capacity(12);
+
+        key.extend_from_slice(&snapshot.to_bytes());
+        key.extend_from_slice(&n.to_le_bytes());
+
+        self.table
+            .set(consts::SNAPSHOT_INDEX_TABLE, &key, &to.to_bytes())
+            .map_err(Error::backend)?;
+
+        Ok(())
+    }
+
+    pub fn write(&self, snapshot: &SnapshotId, k1: &SnapshotId, version: u64) -> Result<()>
+    where
+        T: WriteTable<E>,
+        E: BackendError,
+    {
+        debug_assert!(version >= 1);
+
+        let step = fast_ceil_log2(version - 1);
+
+        if step == 0 {
+            return Ok(());
+        }
+
+        // Inser kn, n > 1
+        for i in 1..step {
+            if i == 1 {
+                log::debug!("Insert version {version}, index 1");
+                self.write_index(snapshot, 1, k1)?;
+            } else {
+                let ii = i - 1;
+
+                log::debug!("Get `i(V{version}, {ii})`");
+                let ki_1 = self
+                    .read(snapshot, ii)?
+                    .ok_or(Error::FatelMissingInnerIndex)?;
+
+                log::debug!("Get `i(i(V{version}, {ii}), {ii})`");
+                let ki_1 = self.read(&ki_1, ii)?;
+
+                if let Some(ki_1) = ki_1 {
+                    self.write_index(snapshot, i, &ki_1)?;
+                } else {
+                    return Ok(());
+                }
+            }
+        }
+
+        Ok(())
+    }
 }
