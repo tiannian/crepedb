@@ -1,3 +1,5 @@
+use core::marker::PhantomData;
+
 use crate::{
     backend::{BackendError, ReadTable, ReadTxn, WriteTable, WriteTxn},
     Error, Result, TableType,
@@ -5,30 +7,77 @@ use crate::{
 
 use super::consts;
 
-pub fn read_type<T, E>(txn: &T, table: &str) -> Result<TableType>
+pub struct MetaTable<T, E> {
+    table: T,
+    marker: PhantomData<E>,
+}
+
+pub fn meta_reader<T, E>(txn: &T) -> Result<MetaTable<T::Table<'_>, E>>
+where
+    T: ReadTxn<E>,
+    E: BackendError,
+{
+    let table = txn
+        .open_table(consts::SNAPSHOT_INDEX_TABLE)
+        .map_err(Error::backend)?;
+    Ok(MetaTable {
+        table,
+        marker: PhantomData,
+    })
+}
+
+pub fn meta_writer<T, E>(txn: &T) -> Result<MetaTable<T::Table<'_>, E>>
+where
+    T: WriteTxn<E>,
+    E: BackendError,
+{
+    let table = txn
+        .open_table(consts::SNAPSHOT_INDEX_TABLE)
+        .map_err(Error::backend)?;
+    Ok(MetaTable {
+        table,
+        marker: PhantomData,
+    })
+}
+
+impl<T, E> MetaTable<T, E>
 where
     T: ReadTable<E>,
     E: BackendError,
 {
-    let bytes = txn
-        .get(consts::META_TABLE, table.as_bytes())
-        .map_err(Error::backend)?
-        .ok_or(Error::MissingTable)?;
+    pub fn read_type(&self, table: &str) -> Result<TableType>
+    where
+        T: ReadTable<E>,
+        E: BackendError,
+    {
+        let bytes = self
+            .table
+            .get(consts::META_TABLE, table.as_bytes())
+            .map_err(Error::backend)?
+            .ok_or(Error::MissingTable)?;
 
-    let byte = bytes.first().ok_or(Error::WrongBytesLength(1))?;
+        let byte = bytes.first().ok_or(Error::WrongBytesLength(1))?;
 
-    let ty = TableType::from_byte(*byte)?;
+        let ty = TableType::from_byte(*byte)?;
 
-    Ok(ty)
+        Ok(ty)
+    }
 }
 
-pub fn write_type<T, E>(txn: T, table: &str, ty: &TableType) -> Result<()>
+impl<T, E> MetaTable<T, E>
 where
     T: WriteTable<E>,
     E: BackendError,
 {
-    txn.set(consts::META_TABLE, table.as_bytes(), &[ty.to_byte()])
-        .map_err(Error::backend)?;
+    pub fn write_type(&self, table: &str, ty: &TableType) -> Result<()>
+    where
+        T: WriteTable<E>,
+        E: BackendError,
+    {
+        self.table
+            .set(consts::META_TABLE, table.as_bytes(), &[ty.to_byte()])
+            .map_err(Error::backend)?;
 
-    Ok(())
+        Ok(())
+    }
 }

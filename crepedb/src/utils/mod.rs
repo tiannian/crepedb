@@ -1,6 +1,11 @@
-pub mod index;
-pub mod snapshot;
-pub mod table;
+mod index;
+pub use index::*;
+
+mod snapshot;
+pub use snapshot::*;
+
+mod table;
+pub use table::*;
 
 pub mod consts;
 

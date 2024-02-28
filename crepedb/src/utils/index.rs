@@ -10,12 +10,12 @@ use crate::{
 
 use super::consts;
 
-pub struct TableIndex<T, E> {
+pub struct IndexTable<T, E> {
     table: T,
     marker: PhantomData<E>,
 }
 
-pub fn reader<T, E>(txn: &T) -> Result<TableIndex<T::Table<'_>, E>>
+pub fn index_reader<T, E>(txn: &T) -> Result<IndexTable<T::Table<'_>, E>>
 where
     T: ReadTxn<E>,
     E: BackendError,
@@ -23,13 +23,13 @@ where
     let table = txn
         .open_table(consts::SNAPSHOT_INDEX_TABLE)
         .map_err(Error::backend)?;
-    Ok(TableIndex {
+    Ok(IndexTable {
         table,
         marker: PhantomData,
     })
 }
 
-pub fn writer<T, E>(txn: &T) -> Result<TableIndex<T::Table<'_>, E>>
+pub fn index_writer<T, E>(txn: &T) -> Result<IndexTable<T::Table<'_>, E>>
 where
     T: WriteTxn<E>,
     E: BackendError,
@@ -37,13 +37,13 @@ where
     let table = txn
         .open_table(consts::SNAPSHOT_INDEX_TABLE)
         .map_err(Error::backend)?;
-    Ok(TableIndex {
+    Ok(IndexTable {
         table,
         marker: PhantomData,
     })
 }
 
-impl<T, E> TableIndex<T, E>
+impl<T, E> IndexTable<T, E>
 where
     T: ReadTable<E>,
     E: BackendError,
@@ -68,7 +68,7 @@ where
     }
 }
 
-impl<T, E> TableIndex<T, E>
+impl<T, E> IndexTable<T, E>
 where
     T: WriteTable<E>,
     E: BackendError,

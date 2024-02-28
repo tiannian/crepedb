@@ -1,3 +1,5 @@
+use core::marker::PhantomData;
+
 use alloc::vec::Vec;
 
 use crate::{
@@ -7,83 +9,116 @@ use crate::{
 
 use super::{consts, parse_u64};
 
-pub fn read<T, E>(txn: &T, snapshot_id: &SnapshotId) -> Result<(u64, SnapshotId)>
+pub struct SnapshotTable<T, E> {
+    table: T,
+    marker: PhantomData<E>,
+}
+
+pub fn snapshot_reader<T, E>(txn: &T) -> Result<SnapshotTable<T::Table<'_>, E>>
+where
+    T: ReadTxn<E>,
+    E: BackendError,
+{
+    let table = txn
+        .open_table(consts::SNAPSHOT_TABLE)
+        .map_err(Error::backend)?;
+    Ok(SnapshotTable {
+        table,
+        marker: PhantomData,
+    })
+}
+
+pub fn snapshot_writer<T, E>(txn: &T) -> Result<SnapshotTable<T::Table<'_>, E>>
+where
+    T: WriteTxn<E>,
+    E: BackendError,
+{
+    let table = txn
+        .open_table(consts::SNAPSHOT_TABLE)
+        .map_err(Error::backend)?;
+    Ok(SnapshotTable {
+        table,
+        marker: PhantomData,
+    })
+}
+
+impl<T, E> SnapshotTable<T, E>
 where
     T: ReadTable<E>,
     E: BackendError,
 {
-    let bytes = txn
-        .get(consts::SNAPSHOT_TABLE, &snapshot_id.to_bytes())
-        .map_err(Error::backend)?
-        .ok_or(Error::MissingSnaopshot(snapshot_id.clone()))?;
+    pub fn read(&self, snapshot_id: &SnapshotId) -> Result<(u64, SnapshotId)> {
+        let bytes = self
+            .table
+            .get(consts::SNAPSHOT_TABLE, &snapshot_id.to_bytes())
+            .map_err(Error::backend)?
+            .ok_or(Error::MissingSnaopshot(snapshot_id.clone()))?;
 
-    let r = parse_u64(&bytes)?;
-    let s = SnapshotId::from_bytes(&bytes[6..])?;
+        let r = parse_u64(&bytes)?;
+        let s = SnapshotId::from_bytes(&bytes[6..])?;
 
-    Ok((r, s))
-}
+        Ok((r, s))
+    }
 
-pub fn has<T, E>(txn: &T, snapshot_id: &SnapshotId) -> Result<bool>
-where
-    T: ReadTable<E>,
-    E: BackendError,
-{
-    let bytes = txn
-        .get(consts::SNAPSHOT_TABLE, &snapshot_id.to_bytes())
-        .map_err(Error::backend)?;
-    Ok(bytes.is_some())
-}
+    pub fn has(&self, snapshot_id: &SnapshotId) -> Result<bool> {
+        let bytes = self
+            .table
+            .get(consts::SNAPSHOT_TABLE, &snapshot_id.to_bytes())
+            .map_err(Error::backend)?;
+        Ok(bytes.is_some())
+    }
 
-pub fn write<T, E>(
-    txn: &T,
-    snapshot_id: &SnapshotId,
-    parent: &SnapshotId,
-    version: u64,
-) -> Result<()>
-where
-    T: WriteTable<E>,
-    E: BackendError,
-{
-    let mut value = Vec::with_capacity(16);
+    pub fn read_next_snapshot_id(&self) -> Result<SnapshotId> {
+        let bytes = self
+            .table
+            .get(consts::SNAPSHOT_TABLE, consts::SNAPSHOT_NEXT_KEY)
+            .map_err(Error::backend)?;
 
-    value.extend_from_slice(&version.to_le_bytes());
-    value.extend_from_slice(&parent.to_bytes());
-
-    txn.set(consts::SNAPSHOT_TABLE, &snapshot_id.to_bytes(), &value)
-        .map_err(Error::backend)?;
-
-    Ok(())
-}
-
-pub fn read_next_snapshot_id<T, E>(txn: &T) -> Result<SnapshotId>
-where
-    T: WriteTable<E>,
-    E: BackendError,
-{
-    let bytes = txn
-        .get(consts::SNAPSHOT_TABLE, consts::SNAPSHOT_NEXT_KEY)
-        .map_err(Error::backend)?;
-
-    if let Some(bytes) = bytes {
-        Ok(SnapshotId::from_bytes(&bytes)?)
-    } else {
-        Ok(SnapshotId::root())
+        if let Some(bytes) = bytes {
+            Ok(SnapshotId::from_bytes(&bytes)?)
+        } else {
+            Ok(SnapshotId::root())
+        }
     }
 }
 
-pub fn write_next_snapahot<T, E>(txn: &T, snapshot_id: &SnapshotId) -> Result<()>
+impl<T, E> SnapshotTable<T, E>
 where
     T: WriteTable<E>,
     E: BackendError,
 {
-    let snapshot = SnapshotId(snapshot_id.0 + 1);
+    pub fn write(&self, snapshot_id: &SnapshotId, parent: &SnapshotId, version: u64) -> Result<()>
+    where
+        T: WriteTable<E>,
+        E: BackendError,
+    {
+        let mut value = Vec::with_capacity(16);
 
-    txn.set(
-        consts::SNAPSHOT_TABLE,
-        consts::SNAPSHOT_NEXT_KEY,
-        &snapshot.to_bytes(),
-    )
-    .map_err(Error::backend)?;
+        value.extend_from_slice(&version.to_le_bytes());
+        value.extend_from_slice(&parent.to_bytes());
 
-    Ok(())
+        self.table
+            .set(consts::SNAPSHOT_TABLE, &snapshot_id.to_bytes(), &value)
+            .map_err(Error::backend)?;
+
+        Ok(())
+    }
+
+    pub fn write_next_snapahot(&self, snapshot_id: &SnapshotId) -> Result<()>
+    where
+        T: WriteTable<E>,
+        E: BackendError,
+    {
+        let snapshot = SnapshotId(snapshot_id.0 + 1);
+
+        self.table
+            .set(
+                consts::SNAPSHOT_TABLE,
+                consts::SNAPSHOT_NEXT_KEY,
+                &snapshot.to_bytes(),
+            )
+            .map_err(Error::backend)?;
+
+        Ok(())
+    }
 }
