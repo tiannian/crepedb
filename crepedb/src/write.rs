@@ -8,7 +8,7 @@ use crate::{
 pub struct WriteTxn<'a, B: Backend> {
     pub(crate) txn: B::WriteTxn<'a>,
 
-    // None if write to root nodr
+    // None if write to root node
     pub(crate) parent_snapshot_id: Option<SnapshotId>,
     pub(crate) snapshot_id: SnapshotId,
     pub(crate) new_snapshot_id: SnapshotId,

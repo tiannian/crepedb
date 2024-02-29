@@ -17,9 +17,7 @@ where
     T: ReadTxn<E>,
     E: BackendError,
 {
-    let table = txn
-        .open_table(consts::SNAPSHOT_INDEX_TABLE)
-        .map_err(Error::backend)?;
+    let table = txn.open_table(consts::META_TABLE).map_err(Error::backend)?;
     Ok(MetaTable {
         table,
         marker: PhantomData,
@@ -31,9 +29,7 @@ where
     T: WriteTxn<E>,
     E: BackendError,
 {
-    let table = txn
-        .open_table(consts::SNAPSHOT_INDEX_TABLE)
-        .map_err(Error::backend)?;
+    let table = txn.open_table(consts::META_TABLE).map_err(Error::backend)?;
     Ok(MetaTable {
         table,
         marker: PhantomData,
@@ -45,11 +41,7 @@ where
     T: ReadTable<E>,
     E: BackendError,
 {
-    pub fn read_type(&self, table: &str) -> Result<TableType>
-    where
-        T: ReadTable<E>,
-        E: BackendError,
-    {
+    pub fn read_type(&self, table: &str) -> Result<TableType> {
         let bytes = self
             .table
             .get(consts::META_TABLE, table.as_bytes())
@@ -69,11 +61,7 @@ where
     T: WriteTable<E>,
     E: BackendError,
 {
-    pub fn write_type(&self, table: &str, ty: &TableType) -> Result<()>
-    where
-        T: WriteTable<E>,
-        E: BackendError,
-    {
+    pub fn write_type(&self, table: &str, ty: &TableType) -> Result<()> {
         self.table
             .set(consts::META_TABLE, table.as_bytes(), &[ty.to_byte()])
             .map_err(Error::backend)?;

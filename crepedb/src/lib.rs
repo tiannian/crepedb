@@ -16,6 +16,9 @@ pub use types::*;
 // mod write;
 // pub use write::*;
 
+mod table;
+pub use table::*;
+
 mod error;
 pub use error::*;
 
