@@ -13,8 +13,8 @@ pub use types::*;
 // mod db;
 // pub use db::*;
 
-// mod write;
-// pub use write::*;
+mod write;
+pub use write::*;
 
 mod table;
 pub use table::*;
