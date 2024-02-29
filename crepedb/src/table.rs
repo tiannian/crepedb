@@ -15,7 +15,7 @@ pub struct WriteTable<T, E> {
     pub(crate) snapshot_id: SnapshotId,
     pub(crate) version: u64,
 
-    marker: PhantomData<E>,
+    pub(crate) marker: PhantomData<E>,
 }
 
 impl<T, E> WriteTable<T, E>

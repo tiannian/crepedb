@@ -1,25 +1,40 @@
-use alloc::vec::Vec;
+use core::marker::PhantomData;
 
 use crate::{
-    backend::{Backend, WriteTxn as BackendWriteTxn},
-    utils::{self, SnapshotTable},
-    DataOp, Error, Result, SnapshotId, TableType,
+    backend::{BackendError, WriteTxn as BackendWriteTxn},
+    utils::{self},
+    Error, Result, SnapshotId, WriteTable,
 };
 
-pub struct WriteTxn<'a, B: Backend> {
-    pub(crate) txn: B::WriteTxn<'a>,
+pub struct WriteTxn<T, E> {
+    pub(crate) txn: T,
 
     // None if write to root node
     pub(crate) parent_snapshot_id: Option<SnapshotId>,
     pub(crate) snapshot_id: SnapshotId,
     pub(crate) new_snapshot_id: SnapshotId,
     pub(crate) version: u64,
+
+    marker: PhantomData<E>,
 }
 
-impl<'a, B> WriteTxn<'a, B>
+impl<T, E> WriteTxn<T, E>
 where
-    B: Backend,
+    T: BackendWriteTxn<E>,
+    E: BackendError,
 {
+    pub fn open_table(&self, table: &str) -> Result<WriteTable<T::Table<'_>, E>> {
+        let table = WriteTable {
+            marker: PhantomData,
+            meta: utils::meta_writer(&self.txn)?,
+            snapshot_id: self.snapshot_id.clone(),
+            table: self.txn.open_table(table).map_err(Error::backend)?,
+            version: self.version,
+        };
+
+        Ok(table)
+    }
+
     pub fn commit(self) -> Result<SnapshotId> {
         {
             let snapshot = utils::snapshot_writer(&self.txn)?;
@@ -30,6 +45,7 @@ where
             // write next snapshot id
             snapshot.write_next_snapahot(&self.new_snapshot_id)?;
         }
+
         if let Some(parent_snapshot_id) = self.parent_snapshot_id {
             // Must not be root
             // build index
