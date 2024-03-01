@@ -43,15 +43,17 @@ pub trait ReadTable<E> {
     where
         Self: 'a;
 
-    fn get(&self, table: &str, key: &[u8]) -> Result<Option<Bytes>, E>;
+    fn get(&self, key: &[u8]) -> Result<Option<Bytes>, E>;
 
-    fn range(&self, table: &str, begin: &[u8], end: &[u8]) -> Result<Self::Range<'_>, E>;
+    fn range(&self, begin: &[u8], end: &[u8]) -> Result<Self::Range<'_>, E>;
+
+    fn name(&self) -> &str;
 }
 
 pub trait WriteTable<E>: ReadTable<E> {
-    fn set(&self, table: &str, key: &[u8], value: &[u8]) -> Result<(), E>;
+    fn set(&self, key: &[u8], value: &[u8]) -> Result<(), E>;
 
-    fn del(&self, table: &str, key: &[u8]) -> Result<(), E>;
+    fn del(&self, key: &[u8]) -> Result<(), E>;
 }
 
 pub trait Range<E> {

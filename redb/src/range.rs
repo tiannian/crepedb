@@ -7,7 +7,7 @@ pub struct RedbRange<'a> {
 }
 
 impl<'a> crepedb::backend::Range<Error> for RedbRange<'a> {
-    fn next(&mut self) -> Result<Option<(crepedb::Bytes, crepedb::Bytes)>, Error> {
+    fn back(&mut self) -> Result<Option<(crepedb::Bytes, crepedb::Bytes)>, Error> {
         let r = self.inner.next();
 
         if let Some(r) = r {

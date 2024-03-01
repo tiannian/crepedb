@@ -50,7 +50,7 @@ where
     pub fn read(&self, snapshot_id: &SnapshotId) -> Result<(u64, SnapshotId)> {
         let bytes = self
             .table
-            .get(consts::SNAPSHOT_TABLE, &snapshot_id.to_bytes())
+            .get(&snapshot_id.to_bytes())
             .map_err(Error::backend)?
             .ok_or(Error::MissingSnaopshot(snapshot_id.clone()))?;
 
@@ -63,7 +63,7 @@ where
     pub fn has(&self, snapshot_id: &SnapshotId) -> Result<bool> {
         let bytes = self
             .table
-            .get(consts::SNAPSHOT_TABLE, &snapshot_id.to_bytes())
+            .get(&snapshot_id.to_bytes())
             .map_err(Error::backend)?;
         Ok(bytes.is_some())
     }
@@ -71,7 +71,7 @@ where
     pub fn read_next_snapshot_id(&self) -> Result<SnapshotId> {
         let bytes = self
             .table
-            .get(consts::SNAPSHOT_TABLE, consts::SNAPSHOT_NEXT_KEY)
+            .get(consts::SNAPSHOT_NEXT_KEY)
             .map_err(Error::backend)?;
 
         if let Some(bytes) = bytes {
@@ -94,7 +94,7 @@ where
         value.extend_from_slice(&parent.to_bytes());
 
         self.table
-            .set(consts::SNAPSHOT_TABLE, &snapshot_id.to_bytes(), &value)
+            .set(&snapshot_id.to_bytes(), &value)
             .map_err(Error::backend)?;
 
         Ok(())
@@ -104,11 +104,7 @@ where
         let snapshot = SnapshotId(snapshot_id.0 + 1);
 
         self.table
-            .set(
-                consts::SNAPSHOT_TABLE,
-                consts::SNAPSHOT_NEXT_KEY,
-                &snapshot.to_bytes(),
-            )
+            .set(consts::SNAPSHOT_NEXT_KEY, &snapshot.to_bytes())
             .map_err(Error::backend)?;
 
         Ok(())

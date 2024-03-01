@@ -54,10 +54,7 @@ where
         key.extend_from_slice(&snapshot.to_bytes());
         key.extend_from_slice(&n.to_le_bytes());
 
-        let bytes = self
-            .table
-            .get(consts::SNAPSHOT_INDEX_TABLE, &key)
-            .map_err(Error::backend)?;
+        let bytes = self.table.get(&key).map_err(Error::backend)?;
 
         if let Some(bytes) = bytes {
             let s = SnapshotId::from_bytes(&bytes)?;
@@ -80,7 +77,7 @@ where
         key.extend_from_slice(&n.to_le_bytes());
 
         self.table
-            .set(consts::SNAPSHOT_INDEX_TABLE, &key, &to.to_bytes())
+            .set(&key, &to.to_bytes())
             .map_err(Error::backend)?;
 
         Ok(())

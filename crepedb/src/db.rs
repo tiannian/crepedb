@@ -1,7 +1,6 @@
-use crate::{
-    backend::{Backend, WriteTxn},
-    utils, Error, Result, SnapshotId, TableType, WriteTxn,
-};
+use core::marker::PhantomData;
+
+use crate::{backend::Backend, utils, Error, Result, SnapshotId, WriteTxn};
 
 pub struct CrepeDB<B> {
     pub(crate) backend: B,
@@ -23,20 +22,20 @@ where
         Ok(Self { backend })
     }
 
-    pub fn write(&self, snapshot_id: SnapshotId) -> Result<WriteTxn<'_, B>> {
+    pub fn write(&self, snapshot_id: SnapshotId) -> Result<WriteTxn<B::WriteTxn<'_>, B::Error>> {
         let txn = self.backend.write_txn().map_err(Error::backend)?;
 
         if snapshot_id == SnapshotId::preroot() {
             // Create root.
             // Need check already have root?
 
-            let table = txn
-                .open_table(utils::consts::SNAPSHOT_TABLE)
-                .map_err(Error::backend)?;
+            let snapshot = utils::snapshot_writer(&txn)?;
 
-            if utils::snapshot::has(&table, &snapshot_id)? {
+            if snapshot.has(&snapshot_id)? {
                 return Err(Error::OnlySupportOneRoot);
             }
+
+            drop(snapshot);
 
             Ok(WriteTxn {
                 txn,
@@ -44,11 +43,16 @@ where
                 new_snapshot_id: SnapshotId::root(),
                 parent_snapshot_id: None,
                 snapshot_id,
+                marker: PhantomData,
             })
         } else {
-            let (version, parent_snapshot_id) = utils::snapshot::read(&txn, &snapshot_id)?;
+            let snapshot = utils::snapshot_writer(&txn)?;
 
-            let new_snapshot_id = utils::snapshot::read_next_snapshot_id(&txn)?;
+            let (version, parent_snapshot_id) = snapshot.read(&snapshot_id)?;
+
+            let new_snapshot_id = snapshot.read_next_snapshot_id()?;
+
+            drop(snapshot);
 
             Ok(WriteTxn {
                 txn,
@@ -56,15 +60,8 @@ where
                 new_snapshot_id,
                 parent_snapshot_id: Some(parent_snapshot_id),
                 snapshot_id,
+                marker: PhantomData,
             })
         }
-    }
-
-    pub fn create_table(&self, table: &str, ty: &TableType) -> Result<()> {
-        let txn = self.backend.write_txn().map_err(Error::backend)?;
-
-        utils::table::write_type(txn, table, ty)?;
-
-        Ok(())
     }
 }

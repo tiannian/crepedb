@@ -2,8 +2,7 @@ use core::marker::PhantomData;
 
 use crate::{
     backend::{BackendError, WriteTxn as BackendWriteTxn},
-    utils::{self},
-    Error, Result, SnapshotId, WriteTable,
+    utils, Error, Result, SnapshotId, TableType, WriteTable,
 };
 
 pub struct WriteTxn<T, E> {
@@ -15,7 +14,7 @@ pub struct WriteTxn<T, E> {
     pub(crate) new_snapshot_id: SnapshotId,
     pub(crate) version: u64,
 
-    marker: PhantomData<E>,
+    pub(crate) marker: PhantomData<E>,
 }
 
 impl<T, E> WriteTxn<T, E>
@@ -23,6 +22,14 @@ where
     T: BackendWriteTxn<E>,
     E: BackendError,
 {
+    pub fn create_table(&self, table: &str, ty: &TableType) -> Result<()> {
+        let meta = utils::meta_writer(&self.txn)?;
+
+        meta.write_type(table, ty)?;
+
+        Ok(())
+    }
+
     pub fn open_table(&self, table: &str) -> Result<WriteTable<T::Table<'_>, E>> {
         let table = WriteTable {
             marker: PhantomData,

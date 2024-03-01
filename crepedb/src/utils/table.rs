@@ -44,7 +44,7 @@ where
     pub fn read_type(&self, table: &str) -> Result<TableType> {
         let bytes = self
             .table
-            .get(consts::META_TABLE, table.as_bytes())
+            .get(table.as_bytes())
             .map_err(Error::backend)?
             .ok_or(Error::MissingTable)?;
 
@@ -63,7 +63,7 @@ where
 {
     pub fn write_type(&self, table: &str, ty: &TableType) -> Result<()> {
         self.table
-            .set(consts::META_TABLE, table.as_bytes(), &[ty.to_byte()])
+            .set(table.as_bytes(), &[ty.to_byte()])
             .map_err(Error::backend)?;
 
         Ok(())

@@ -26,30 +26,28 @@ where
     /// Set Key-Value in table
     ///
     /// Table must be exist.
-    pub fn set(&self, table: &str, key: Vec<u8>, value: Vec<u8>) -> Result<()> {
+    pub fn set(&self, key: Vec<u8>, value: Vec<u8>) -> Result<()> {
+        let table = self.table.name();
+
         let table_type = self.meta.read_type(table)?;
 
         match table_type {
-            TableType::Basic => self.set_basic(table, key, value),
-            TableType::Versioned => self.set_versioned(table, key, value),
+            TableType::Basic => self.set_basic(key, value),
+            TableType::Versioned => self.set_versioned(key, value),
         }
     }
 
-    fn set_basic(&self, table: &str, key: Vec<u8>, value: Vec<u8>) -> Result<()> {
-        self.table
-            .set(table, &key, &value)
-            .map_err(Error::backend)?;
+    fn set_basic(&self, key: Vec<u8>, value: Vec<u8>) -> Result<()> {
+        self.table.set(&key, &value).map_err(Error::backend)?;
 
         Ok(())
     }
 
-    fn set_versioned(&self, table: &str, key: Vec<u8>, value: Vec<u8>) -> Result<()> {
+    fn set_versioned(&self, key: Vec<u8>, value: Vec<u8>) -> Result<()> {
         let key = self.build_key(key);
         let value = DataOp::Set(value).to_bytes();
 
-        self.table
-            .set(table, &key, &value)
-            .map_err(Error::backend)?;
+        self.table.set(&key, &value).map_err(Error::backend)?;
 
         Ok(())
     }
@@ -57,28 +55,28 @@ where
     /// Set Value in table by Key
     ///
     /// Table must be exist.
-    pub fn del(&self, table: &str, key: Vec<u8>) -> Result<()> {
+    pub fn del(&self, key: Vec<u8>) -> Result<()> {
+        let table = self.table.name();
+
         let table_type = self.meta.read_type(table)?;
 
         match table_type {
-            TableType::Basic => self.del_basic(table, key),
-            TableType::Versioned => self.del_versioned(table, key),
+            TableType::Basic => self.del_basic(key),
+            TableType::Versioned => self.del_versioned(key),
         }
     }
 
-    fn del_basic(&self, table: &str, key: Vec<u8>) -> Result<()> {
-        self.table.del(table, &key).map_err(Error::backend)?;
+    fn del_basic(&self, key: Vec<u8>) -> Result<()> {
+        self.table.del(&key).map_err(Error::backend)?;
 
         Ok(())
     }
 
-    fn del_versioned(&self, table: &str, key: Vec<u8>) -> Result<()> {
+    fn del_versioned(&self, key: Vec<u8>) -> Result<()> {
         let key = self.build_key(key);
         let value = DataOp::Del.to_bytes();
 
-        self.table
-            .set(table, &key, &value)
-            .map_err(Error::backend)?;
+        self.table.set(&key, &value).map_err(Error::backend)?;
 
         Ok(())
     }
