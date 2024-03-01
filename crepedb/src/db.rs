@@ -16,12 +16,6 @@ where
         Ok(Self { backend })
     }
 
-    pub fn open_readonly(path: &str) -> Result<Self> {
-        let backend = B::open_readonly(path).map_err(Error::backend)?;
-
-        Ok(Self { backend })
-    }
-
     pub fn write(&self, snapshot_id: SnapshotId) -> Result<WriteTxn<B::WriteTxn<'_>, B::Error>> {
         let txn = self.backend.write_txn().map_err(Error::backend)?;
 

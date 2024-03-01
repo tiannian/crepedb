@@ -11,14 +11,14 @@ pub trait Backend: Sized + 'static {
 
     fn open_db(path: &str) -> Result<Self, Self::Error>;
 
-    fn open_readonly(path: &str) -> Result<Self, Self::Error>;
-
     fn read_txn(&self) -> Result<Self::ReadTxn<'_>, Self::Error>;
 
     fn write_txn(&self) -> Result<Self::WriteTxn<'_>, Self::Error>;
 }
 
 pub trait BackendError: Debug + Display + 'static {}
+
+impl<T> BackendError for T where T: Debug + Display + 'static {}
 
 pub trait ReadTxn<E> {
     type Table<'a>: ReadTable<E>
