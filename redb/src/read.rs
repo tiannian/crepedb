@@ -7,10 +7,8 @@ pub struct RedbReadTxn<'a> {
     pub(crate) inner: ReadTransaction<'a>,
 }
 
-impl<'a> ReadTxn<Error> for RedbReadTxn<'a> {
-    // type Table<'a> = Redb;
-
-    fn open_table(&self, table: &str) -> Result<Self::Table<'_>, Error> {
-        // let
-    }
-}
+// impl<'a> ReadTxn<Error> for RedbReadTxn<'a> {
+//     type Table<'a> = Redb;
+//
+//     fn open_table(&self, table: &str) -> Result<Self::Table<'_>, Error> {}
+// }
