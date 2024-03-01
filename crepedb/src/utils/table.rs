@@ -61,7 +61,7 @@ where
     T: WriteTable<E>,
     E: BackendError,
 {
-    pub fn write_type(&self, table: &str, ty: &TableType) -> Result<()> {
+    pub fn write_type(&mut self, table: &str, ty: &TableType) -> Result<()> {
         self.table
             .set(table.as_bytes(), &[ty.to_byte()])
             .map_err(Error::backend)?;

@@ -26,7 +26,7 @@ where
     /// Set Key-Value in table
     ///
     /// Table must be exist.
-    pub fn set(&self, key: Vec<u8>, value: Vec<u8>) -> Result<()> {
+    pub fn set(&mut self, key: Vec<u8>, value: Vec<u8>) -> Result<()> {
         let table = self.table.name();
 
         let table_type = self.meta.read_type(table)?;
@@ -37,13 +37,13 @@ where
         }
     }
 
-    fn set_basic(&self, key: Vec<u8>, value: Vec<u8>) -> Result<()> {
+    fn set_basic(&mut self, key: Vec<u8>, value: Vec<u8>) -> Result<()> {
         self.table.set(&key, &value).map_err(Error::backend)?;
 
         Ok(())
     }
 
-    fn set_versioned(&self, key: Vec<u8>, value: Vec<u8>) -> Result<()> {
+    fn set_versioned(&mut self, key: Vec<u8>, value: Vec<u8>) -> Result<()> {
         let key = self.build_key(key);
         let value = DataOp::Set(value).to_bytes();
 
@@ -55,7 +55,7 @@ where
     /// Set Value in table by Key
     ///
     /// Table must be exist.
-    pub fn del(&self, key: Vec<u8>) -> Result<()> {
+    pub fn del(&mut self, key: Vec<u8>) -> Result<()> {
         let table = self.table.name();
 
         let table_type = self.meta.read_type(table)?;
@@ -66,13 +66,13 @@ where
         }
     }
 
-    fn del_basic(&self, key: Vec<u8>) -> Result<()> {
+    fn del_basic(&mut self, key: Vec<u8>) -> Result<()> {
         self.table.del(&key).map_err(Error::backend)?;
 
         Ok(())
     }
 
-    fn del_versioned(&self, key: Vec<u8>) -> Result<()> {
+    fn del_versioned(&mut self, key: Vec<u8>) -> Result<()> {
         let key = self.build_key(key);
         let value = DataOp::Del.to_bytes();
 

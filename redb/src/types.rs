@@ -2,7 +2,7 @@ use crepedb::Bytes;
 use redb::{RedbKey, RedbValue};
 
 #[derive(Debug)]
-pub struct BytesTy(pub(crate) Bytes);
+pub struct BytesTy;
 
 impl RedbValue for BytesTy {
     type AsBytes<'a> = <Bytes as RedbValue>::AsBytes<'a>;

@@ -51,9 +51,9 @@ pub trait ReadTable<E> {
 }
 
 pub trait WriteTable<E>: ReadTable<E> {
-    fn set(&self, key: &[u8], value: &[u8]) -> Result<(), E>;
+    fn set(&mut self, key: &[u8], value: &[u8]) -> Result<(), E>;
 
-    fn del(&self, key: &[u8]) -> Result<(), E>;
+    fn del(&mut self, key: &[u8]) -> Result<(), E>;
 }
 
 pub trait Range<E> {

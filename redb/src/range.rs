@@ -1,9 +1,10 @@
+use crepedb::Bytes;
 use redb::{Error, Range};
 
 use crate::types::BytesTy;
 
 pub struct RedbRange<'a> {
-    pub(crate) inner: Range<'a, BytesTy, BytesTy>,
+    pub(crate) inner: Range<'a, BytesTy, Bytes>,
 }
 
 impl<'a> crepedb::backend::Range<Error> for RedbRange<'a> {

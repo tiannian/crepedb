@@ -23,7 +23,7 @@ where
     E: BackendError,
 {
     pub fn create_table(&self, table: &str, ty: &TableType) -> Result<()> {
-        let meta = utils::meta_writer(&self.txn)?;
+        let mut meta = utils::meta_writer(&self.txn)?;
 
         meta.write_type(table, ty)?;
 
@@ -44,7 +44,7 @@ where
 
     pub fn commit(self) -> Result<SnapshotId> {
         {
-            let snapshot = utils::snapshot_writer(&self.txn)?;
+            let mut snapshot = utils::snapshot_writer(&self.txn)?;
 
             // write snapshot info
             snapshot.write(&self.new_snapshot_id, &self.snapshot_id, self.version)?;
@@ -56,7 +56,7 @@ where
         if let Some(parent_snapshot_id) = self.parent_snapshot_id {
             // Must not be root
             // build index
-            let index = utils::index_writer(&self.txn)?;
+            let mut index = utils::index_writer(&self.txn)?;
 
             index.write(&self.new_snapshot_id, &parent_snapshot_id, self.version)?;
         }

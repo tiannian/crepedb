@@ -87,7 +87,12 @@ where
     T: WriteTable<E>,
     E: BackendError,
 {
-    pub fn write(&self, snapshot_id: &SnapshotId, parent: &SnapshotId, version: u64) -> Result<()> {
+    pub fn write(
+        &mut self,
+        snapshot_id: &SnapshotId,
+        parent: &SnapshotId,
+        version: u64,
+    ) -> Result<()> {
         let mut value = Vec::with_capacity(16);
 
         value.extend_from_slice(&version.to_le_bytes());
@@ -100,7 +105,7 @@ where
         Ok(())
     }
 
-    pub fn write_next_snapahot(&self, snapshot_id: &SnapshotId) -> Result<()> {
+    pub fn write_next_snapahot(&mut self, snapshot_id: &SnapshotId) -> Result<()> {
         let snapshot = SnapshotId(snapshot_id.0 + 1);
 
         self.table

@@ -70,7 +70,7 @@ where
     T: WriteTable<E>,
     E: BackendError,
 {
-    fn write_index(&self, snapshot: &SnapshotId, n: u32, to: &SnapshotId) -> Result<()> {
+    fn write_index(&mut self, snapshot: &SnapshotId, n: u32, to: &SnapshotId) -> Result<()> {
         let mut key = Vec::with_capacity(12);
 
         key.extend_from_slice(&snapshot.to_bytes());
@@ -83,7 +83,7 @@ where
         Ok(())
     }
 
-    pub fn write(&self, snapshot: &SnapshotId, k1: &SnapshotId, version: u64) -> Result<()> {
+    pub fn write(&mut self, snapshot: &SnapshotId, k1: &SnapshotId, version: u64) -> Result<()> {
         debug_assert!(version >= 1);
 
         let step = fast_ceil_log2(version - 1);
