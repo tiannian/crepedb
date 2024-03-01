@@ -1,6 +1,9 @@
 // mod read;
 // pub use read::*;
 
+mod write;
+pub use write::*;
+
 mod table;
 pub use table::*;
 
