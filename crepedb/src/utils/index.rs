@@ -119,3 +119,87 @@ where
         Ok(())
     }
 }
+
+#[cfg(test)]
+pub mod tests {
+    use crate::{
+        backend::{BackendError, ReadTxn},
+        utils::snapshot_reader,
+        Result, SnapshotId,
+    };
+
+    use super::index_reader;
+
+    pub fn check_index_10<T, E>(txn: &T, snapshot: SnapshotId) -> Result<()>
+    where
+        T: ReadTxn<E>,
+        E: BackendError,
+    {
+        let idx = index_reader(txn)?;
+        let snp = snapshot_reader(txn)?;
+
+        macro_rules! check_inner {
+            (
+                $p:expr,
+                $bi:literal,
+                $ei:literal => None,
+                $( $i:literal => $v:literal),*
+            ) => {
+                {
+                    let (v, n) = snp.read(&$p)?;
+                    assert_eq!(v, $bi);
+                    $(
+
+                        {
+                            let s = idx.read(&$p, $i)?.unwrap();
+                            let (v, _) = snp.read(&s)?;
+                            assert_eq!(v, $v);
+                        }
+                    )*
+
+                    let sp = idx.read(&$p, $ei)?;
+                    assert_eq!(sp, None);
+                    n
+                }
+            };
+
+            (
+                $p:expr,
+                $bi:literal,
+                $ei:literal => $ev:literal,
+                $( $i:literal => $v:literal),*
+            ) => {
+                {
+                    let (v, n) = snp.read(&$p)?;
+                    assert_eq!(v, $bi);
+                    $(
+
+                        {
+                            let s = idx.read(&$p, $i)?.unwrap();
+                            let (v, _) = snp.read(&s)?;
+                            assert_eq!(v, $v);
+                        }
+                    )*
+
+                    let s = idx.read(&$p, $ei)?.unwrap();
+                    let (v, _) = snp.read(&s)?;
+                    assert_eq!(v, $ev);
+                    n
+                }
+            };
+        }
+
+        let ppp = check_inner!(snapshot, 11, 4 => None, 1 => 9, 2 => 7, 3 => 3);
+        let ppp = check_inner!(ppp,      10, 4 => None, 1 => 8, 2 => 6, 3 => 2);
+        let ppp = check_inner!(ppp,      9,  4 => None, 1 => 7, 2 => 5, 3 => 1);
+        let ppp = check_inner!(ppp,      8,  3 => 0,    1 => 6, 2 => 4);
+        let ppp = check_inner!(ppp,      7,  3 => None, 1 => 5, 2 => 3);
+        let ppp = check_inner!(ppp,      6,  3 => None, 1 => 4, 2 => 2);
+        let ppp = check_inner!(ppp,      5,  3 => None, 1 => 3, 2 => 1);
+        let ppp = check_inner!(ppp,      4,  2 => 0,    1 => 2);
+        let ppp = check_inner!(ppp,      3,  2 => None, 1 => 1);
+        check_inner!(          ppp,      2,  1 => 0,);
+
+        Ok(())
+    }
+}

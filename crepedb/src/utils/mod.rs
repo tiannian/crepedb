@@ -17,7 +17,7 @@ pub fn fast_ceil_log2(n: u64) -> u32 {
 }
 
 #[cfg(test)]
-mod tests {
+mod _tests {
     use std::println;
 
     use crate::utils::fast_ceil_log2;
