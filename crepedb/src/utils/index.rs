@@ -172,6 +172,7 @@ pub mod tests {
                 {
                     let (v, n) = snp.read(&$p)?;
                     assert_eq!(v, $bi);
+
                     $(
 
                         {
@@ -187,6 +188,19 @@ pub mod tests {
                     n
                 }
             };
+
+            (
+                $p:expr,
+                $bi:literal
+            ) => {
+                {
+                    let (v, n) = snp.read(&$p)?;
+                    assert_eq!(v, $bi);
+
+                    n
+                }
+            }
+
         }
 
         let ppp = check_inner!(snapshot, 11, 4 => None, 1 => 9, 2 => 7, 3 => 3);
@@ -198,7 +212,9 @@ pub mod tests {
         let ppp = check_inner!(ppp,      5,  3 => None, 1 => 3, 2 => 1);
         let ppp = check_inner!(ppp,      4,  2 => 0,    1 => 2);
         let ppp = check_inner!(ppp,      3,  2 => None, 1 => 1);
-        check_inner!(          ppp,      2,  1 => 0,);
+        let ppp = check_inner!(ppp,      2,  1 => 0,);
+        let ppp = check_inner!(ppp, 1);
+        check_inner!(ppp, 0);
 
         Ok(())
     }
