@@ -1,5 +1,7 @@
 use core::marker::PhantomData;
 
+use alloc::vec;
+
 use crate::{
     backend::{BackendError, ReadTable, ReadTxn, WriteTable, WriteTxn},
     Error, Result, TableType,
@@ -44,7 +46,7 @@ where
     pub fn read_type(&self, table: &str) -> Result<TableType> {
         let bytes = self
             .table
-            .get(table.as_bytes())
+            .get(table.into())
             .map_err(Error::backend)?
             .ok_or(Error::MissingTable)?;
 
@@ -63,7 +65,7 @@ where
 {
     pub fn write_type(&mut self, table: &str, ty: &TableType) -> Result<()> {
         self.table
-            .set(table.as_bytes(), &[ty.to_byte()])
+            .set(table.into(), vec![ty.to_byte()])
             .map_err(Error::backend)?;
 
         Ok(())

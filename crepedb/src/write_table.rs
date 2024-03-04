@@ -38,7 +38,7 @@ where
     }
 
     fn set_basic(&mut self, key: Vec<u8>, value: Vec<u8>) -> Result<()> {
-        self.table.set(&key, &value).map_err(Error::backend)?;
+        self.table.set(key, value).map_err(Error::backend)?;
 
         Ok(())
     }
@@ -47,7 +47,7 @@ where
         let key = self.build_key(key);
         let value = DataOp::Set(value).to_bytes();
 
-        self.table.set(&key, &value).map_err(Error::backend)?;
+        self.table.set(key, value).map_err(Error::backend)?;
 
         Ok(())
     }
@@ -67,7 +67,7 @@ where
     }
 
     fn del_basic(&mut self, key: Vec<u8>) -> Result<()> {
-        self.table.del(&key).map_err(Error::backend)?;
+        self.table.del(key).map_err(Error::backend)?;
 
         Ok(())
     }
@@ -76,7 +76,7 @@ where
         let key = self.build_key(key);
         let value = DataOp::Del.to_bytes();
 
-        self.table.set(&key, &value).map_err(Error::backend)?;
+        self.table.set(key, value).map_err(Error::backend)?;
 
         Ok(())
     }

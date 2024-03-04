@@ -16,8 +16,11 @@ pub use db::*;
 mod write;
 pub use write::*;
 
-mod table;
-pub use table::*;
+mod read_table;
+pub use read_table::*;
+
+mod write_table;
+pub use write_table::*;
 
 mod error;
 pub use error::*;

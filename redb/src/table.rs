@@ -1,4 +1,7 @@
-use crepedb::backend::{ReadTable, WriteTable};
+use crepedb::{
+    backend::{ReadTable, WriteTable},
+    Bytes,
+};
 use redb::{Error, ReadOnlyTable, ReadableTable, Table, TableHandle};
 
 use crate::{types::BytesTy, RedbRange};
@@ -15,18 +18,15 @@ impl<'txn> ReadTable<Error> for RedbReadTable<'txn> {
         &self.name
     }
 
-    fn get(&self, key: &[u8]) -> Result<Option<crepedb::Bytes>, Error> {
-        if let Some(r) = self.inner.get(key.to_vec())? {
+    fn get(&self, key: Bytes) -> Result<Option<crepedb::Bytes>, Error> {
+        if let Some(r) = self.inner.get(key)? {
             Ok(Some(r.value()))
         } else {
             Ok(None)
         }
     }
 
-    fn range(&self, begin: &[u8], end: &[u8]) -> Result<Self::Range<'_>, Error> {
-        let begin = begin.to_vec();
-        let end = end.to_vec();
-
+    fn range(&self, begin: Bytes, end: Bytes) -> Result<Self::Range<'_>, Error> {
         let r = self.inner.range(begin..end)?;
 
         Ok(RedbRange { inner: r })
@@ -44,18 +44,15 @@ impl<'a, 'b> ReadTable<Error> for RedbWriteTable<'a, 'b> {
         self.inner.name()
     }
 
-    fn get(&self, key: &[u8]) -> Result<Option<crepedb::Bytes>, Error> {
-        if let Some(r) = self.inner.get(key.to_vec())? {
+    fn get(&self, key: Bytes) -> Result<Option<crepedb::Bytes>, Error> {
+        if let Some(r) = self.inner.get(key)? {
             Ok(Some(r.value()))
         } else {
             Ok(None)
         }
     }
 
-    fn range(&self, begin: &[u8], end: &[u8]) -> Result<Self::Range<'_>, Error> {
-        let begin = begin.to_vec();
-        let end = end.to_vec();
-
+    fn range(&self, begin: Bytes, end: Bytes) -> Result<Self::Range<'_>, Error> {
         let r = self.inner.range(begin..end)?;
 
         Ok(RedbRange { inner: r })
@@ -63,14 +60,14 @@ impl<'a, 'b> ReadTable<Error> for RedbWriteTable<'a, 'b> {
 }
 
 impl<'a, 'b> WriteTable<Error> for RedbWriteTable<'a, 'b> {
-    fn set(&mut self, key: &[u8], value: &[u8]) -> Result<(), Error> {
-        self.inner.insert(key.to_vec(), value.to_vec())?;
+    fn set(&mut self, key: Bytes, value: Bytes) -> Result<(), Error> {
+        self.inner.insert(key, value)?;
 
         Ok(())
     }
 
-    fn del(&mut self, key: &[u8]) -> Result<(), Error> {
-        self.inner.remove(key.to_vec())?;
+    fn del(&mut self, key: Bytes) -> Result<(), Error> {
+        self.inner.remove(key)?;
 
         Ok(())
     }
