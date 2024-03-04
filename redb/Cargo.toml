@@ -6,4 +6,9 @@ edition = "2021"
 [dependencies]
 crepedb.workspace = true
 
+log.workspace = true
+
 redb = "1.5.0"
+
+[dev-dependencies]
+env_logger = "0.11.2"

@@ -55,7 +55,7 @@ where
             .ok_or(Error::MissingSnaopshot(snapshot_id.clone()))?;
 
         let r = parse_u64(&bytes)?;
-        let s = SnapshotId::from_bytes(&bytes[6..])?;
+        let s = SnapshotId::from_bytes(&bytes[8..])?;
 
         Ok((r, s))
     }

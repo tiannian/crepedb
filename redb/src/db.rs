@@ -26,8 +26,8 @@ impl Backend for RedbDatabase {
         Ok(RedbWriteTxn { inner: txn })
     }
 
-    fn open_db(path: &str) -> Result<Self, Self::Error> {
-        let db = Database::open(path)?;
+    fn open_or_create(path: &str) -> Result<Self, Self::Error> {
+        let db = Database::create(path)?;
         Ok(Self { inner: db })
     }
 }

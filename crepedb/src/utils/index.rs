@@ -86,31 +86,35 @@ where
     pub fn write(&mut self, snapshot: &SnapshotId, k1: &SnapshotId, version: u64) -> Result<()> {
         debug_assert!(version >= 1);
 
-        let step = fast_ceil_log2(version - 1);
+        let step = fast_ceil_log2(version);
 
         if step == 0 {
             return Ok(());
         }
 
+        log::debug!("Verion {version}, Total index num is: {step}");
+
         // Inser kn, n > 1
         for i in 1..step {
             if i == 1 {
-                log::debug!("Insert version {version}, index 1");
                 self.write_index(snapshot, 1, k1)?;
+                log::debug!("Insert version {version}, index {i} is: {k1:?}");
             } else {
                 let ii = i - 1;
 
-                log::debug!("Get `i(V{version}, {ii})`");
                 let ki_1 = self
                     .read(snapshot, ii)?
                     .ok_or(Error::FatelMissingInnerIndex)?;
+                log::debug!("Get `i(V{version}, {ii}) = {ki_1:?}`");
 
                 log::debug!("Get `i(i(V{version}, {ii}), {ii})`");
                 let ki_1 = self.read(&ki_1, ii)?;
 
                 if let Some(ki_1) = ki_1 {
                     self.write_index(snapshot, i, &ki_1)?;
+                    log::debug!("Insert version {version}, index {i} is: {ki_1:?}");
                 } else {
+                    log::debug!("Missing!");
                     return Ok(());
                 }
             }

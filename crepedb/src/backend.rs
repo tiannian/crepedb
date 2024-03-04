@@ -9,7 +9,7 @@ pub trait Backend: Sized + 'static {
 
     type WriteTxn<'a>: WriteTxn<Self::Error>;
 
-    fn open_db(path: &str) -> Result<Self, Self::Error>;
+    fn open_or_create(path: &str) -> Result<Self, Self::Error>;
 
     fn read_txn(&self) -> Result<Self::ReadTxn<'_>, Self::Error>;
 

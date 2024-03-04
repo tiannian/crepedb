@@ -1,4 +1,4 @@
-use core::marker::PhantomData;
+use core::{fmt::Debug, marker::PhantomData};
 
 use crate::{
     backend::{BackendError, WriteTxn as BackendWriteTxn},
@@ -15,6 +15,21 @@ pub struct WriteTxn<T, E> {
     pub(crate) version: u64,
 
     pub(crate) marker: PhantomData<E>,
+}
+
+impl<T, E> Debug for WriteTxn<T, E> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.write_fmt(format_args!(
+            "{{ parent_snapshot_id: {:?}, ",
+            self.parent_snapshot_id
+        ))?;
+        f.write_fmt(format_args!("snapshot_id: {:?}, ", self.snapshot_id))?;
+        f.write_fmt(format_args!(
+            "new_snapshot_id: {:?}, ",
+            self.new_snapshot_id
+        ))?;
+        f.write_fmt(format_args!("version: {} }}", self.version))
+    }
 }
 
 impl<T, E> WriteTxn<T, E>

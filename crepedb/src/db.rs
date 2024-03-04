@@ -11,7 +11,7 @@ where
     B: Backend,
 {
     pub fn open(path: &str) -> Result<Self> {
-        let backend = B::open_db(path).map_err(Error::backend)?;
+        let backend = B::open_or_create(path).map_err(Error::backend)?;
 
         Ok(Self { backend })
     }
