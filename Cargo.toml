@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["crepedb", "backends/redb", "tool"]
+members = ["crepedb", "backends/redb", "tool", "backends/sled", "backends/mdbx", "backends/rocksdb"]
 
 [workspace.dependencies]
 log = "0.4.20"
