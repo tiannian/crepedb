@@ -22,6 +22,14 @@ Table have two type:
 CrepeDB will record table's property in `__crepe_meta`. The key is table name,
 The first byte in value is table type. `1` means table is `Basic`. `2` means table is `Versioned`.
 
+### Versioned Table
+
+This table's key is made up by these parts:
+
+1. key
+2. version
+3. snapshot id
+
 ## Snapshot
 
 Snapshot ID is `u64`. `0` is `Preroot`, `1` is `Root`.

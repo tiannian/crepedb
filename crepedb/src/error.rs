@@ -11,6 +11,8 @@ pub enum Error {
     WrongSnapshotIdMustBeCommon,
     OnlySupportOneRoot,
     FatelMissingInnerIndex,
+    MissingDataOpFlag,
+    UnexpectedDataOpType(u8),
 
     BackendError(Box<dyn BackendError>),
 }
