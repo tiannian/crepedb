@@ -46,9 +46,13 @@ where
     }
 
     pub fn open_table(&self, table: &str) -> Result<WriteTable<T::Table<'_>, E>> {
+        let meta = utils::meta_reader_by_write(&self.txn)?;
+
+        let table_type = meta.read_type(table)?;
+
         let table = WriteTable {
             marker: PhantomData,
-            meta: utils::meta_writer(&self.txn)?,
+            table_type,
             snapshot_id: self.snapshot_id.clone(),
             table: self.txn.open_table(table).map_err(Error::backend)?,
             version: self.version,

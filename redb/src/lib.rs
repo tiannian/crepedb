@@ -35,7 +35,7 @@ mod tests {
 
         let mut sid = SnapshotId::preroot();
 
-        for _ in 1..12 {
+        for _ in 1..14 {
             log::trace!("SnapshotId is :{:?}", sid);
 
             let write_txn = db.write(sid)?;

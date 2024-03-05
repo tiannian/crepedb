@@ -26,6 +26,18 @@ where
     })
 }
 
+pub fn meta_reader_by_write<T, E>(txn: &T) -> Result<MetaTable<T::Table<'_>, E>>
+where
+    T: WriteTxn<E>,
+    E: BackendError,
+{
+    let table = txn.open_table(consts::META_TABLE).map_err(Error::backend)?;
+    Ok(MetaTable {
+        table,
+        marker: PhantomData,
+    })
+}
+
 pub fn meta_writer<T, E>(txn: &T) -> Result<MetaTable<T::Table<'_>, E>>
 where
     T: WriteTxn<E>,
