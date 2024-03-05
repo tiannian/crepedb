@@ -2,14 +2,16 @@ use core::marker::PhantomData;
 
 use crate::{
     backend::{BackendError, Range, ReadTable as BackendReadTable},
-    utils::{self, IndexTable, MetaTable},
+    utils::{self, IndexTable},
     Bytes, DataOp, Error, Result, SnapshotId, TableType,
 };
 
 pub struct ReadTable<T, E> {
     pub(crate) table: T,
-    pub(crate) meta: MetaTable<T, E>,
+
     pub(crate) index: IndexTable<T, E>,
+
+    pub(crate) table_type: TableType,
 
     pub(crate) snapshot_id: SnapshotId,
     pub(crate) version: u64,
@@ -23,9 +25,7 @@ where
     E: BackendError,
 {
     pub fn get(&self, key: Bytes) -> Result<Option<Bytes>> {
-        let ty = self.meta.read_type(self.table.name())?;
-
-        match ty {
+        match self.table_type {
             TableType::Basic => self.get_basic(key),
             TableType::Versioned => self.get_versioned(key),
         }
