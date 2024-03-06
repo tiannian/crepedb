@@ -44,16 +44,18 @@ where
         let mut end = key;
 
         begin.extend_from_slice(&0u64.to_le_bytes());
-        begin.extend_from_slice(&SnapshotId::preroot().to_bytes());
+        begin.extend_from_slice(&SnapshotId::root().to_bytes());
 
         end.extend_from_slice(&u64::MAX.to_le_bytes());
-        end.extend_from_slice(&SnapshotId::end().to_bytes());
+        end.extend_from_slice(&SnapshotId::preroot().to_bytes());
 
         let mut iter = self.table.range(begin, end).map_err(Error::backend)?;
 
         while let Some((k, v)) = iter.back().map_err(Error::backend)? {
             let version = utils::parse_u64(&k[key_len..key_len + 8])?;
             let sss = SnapshotId::from_bytes(&k[key_len + 8..key_len + 16])?;
+
+            log::debug!("version: {version}, snapshot: {sss:?}, value: {v:?}");
 
             if version > self.version {
                 continue;
@@ -83,8 +85,6 @@ where
                 let res = DataOp::from_bytes(v)?;
 
                 return Ok(res.into());
-            } else {
-                return Ok(None);
             }
         }
 

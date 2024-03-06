@@ -85,14 +85,10 @@ impl SnapshotId {
     }
 
     pub const fn preroot() -> Self {
-        Self(0)
+        Self(u64::MAX)
     }
 
     pub const fn root() -> Self {
-        Self(1)
-    }
-
-    pub const fn end() -> Self {
-        Self(u64::MAX)
+        Self(0)
     }
 }

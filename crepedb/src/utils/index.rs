@@ -244,9 +244,9 @@ pub mod tests {
 
         write_txn.commit()?;
 
-        let mut sid = SnapshotId::preroot();
+        let mut sid = SnapshotId::root();
 
-        for _ in 1..13 {
+        for _ in 1..12 {
             log::trace!("SnapshotId is :{:?}", sid);
 
             let write_txn = db.write(sid)?;

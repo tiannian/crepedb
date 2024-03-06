@@ -53,7 +53,7 @@ where
         let table = WriteTable {
             marker: PhantomData,
             table_type,
-            snapshot_id: self.snapshot_id.clone(),
+            snapshot_id: self.new_snapshot_id.clone(),
             table: self.txn.open_table(table).map_err(Error::backend)?,
             version: self.version,
         };

@@ -18,3 +18,13 @@ impl<'a> ReadTxn<Error> for RedbReadTxn<'a> {
         Ok(RedbReadTable { inner, name })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::RedbDatabase;
+
+    #[test]
+    fn test_read() {
+        crepedb::read_tests::test_read::<RedbDatabase>().unwrap();
+    }
+}
