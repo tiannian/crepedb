@@ -58,7 +58,7 @@ where
 
             Ok(WriteTxn {
                 txn,
-                version,
+                version: (version.0 + 1).into(),
                 new_snapshot_id,
                 parent_snapshot_id: Some(parent_snapshot_id),
                 snapshot_id,
