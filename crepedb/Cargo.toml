@@ -9,3 +9,7 @@ hex.workspace = true
 seq-macro.workspace = true
 
 log.workspace = true
+
+[features]
+default = []
+tests = []

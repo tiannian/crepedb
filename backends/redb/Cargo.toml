@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-crepedb.workspace = true
+crepedb = { workspace = true, features = ["tests"] }
 
 log.workspace = true
 

@@ -124,12 +124,14 @@ where
     }
 }
 
-// #[cfg(test)]
+#[cfg(feature = "tests")]
 pub mod tests {
+    use std::{fs, path::Path};
+
     use crate::{
-        backend::{BackendError, ReadTxn as BackendReadTxn},
+        backend::{Backend, BackendError, ReadTxn as BackendReadTxn},
         utils::snapshot_reader,
-        ReadTxn, Result,
+        CrepeDB, ReadTxn, Result, SnapshotId,
     };
 
     use super::index_reader;
@@ -221,6 +223,45 @@ pub mod tests {
         let ppp = check_inner!(ppp,      2,  1 => 0,);
         let ppp = check_inner!(ppp, 1);
         check_inner!(ppp, 0);
+
+        Ok(())
+    }
+
+    pub fn test_db_10<B>() -> Result<()>
+    where
+        B: Backend,
+    {
+        let path = Path::new("/tmp/__crepedb");
+
+        fs::create_dir_all(path).unwrap();
+
+        let db: CrepeDB<B> = CrepeDB::open("/tmp/__crepedb/snapshot_10")?;
+
+        let sid = SnapshotId::preroot();
+
+        let write_txn = db.write(sid)?;
+        log::info!("{:?}", write_txn);
+
+        write_txn.commit()?;
+
+        let mut sid = SnapshotId::preroot();
+
+        for _ in 1..13 {
+            log::trace!("SnapshotId is :{:?}", sid);
+
+            let write_txn = db.write(sid)?;
+            log::info!("{:?}", write_txn);
+
+            let nsid = write_txn.commit()?;
+
+            sid = nsid;
+        }
+
+        let txn = db.read(sid)?;
+
+        check_index_10(txn)?;
+
+        fs::remove_file("/tmp/__crepedb/snapshot_10").unwrap();
 
         Ok(())
     }

@@ -2,7 +2,7 @@
 
 extern crate alloc;
 
-#[cfg(test)]
+#[cfg(feature = "tests")]
 extern crate std;
 
 pub mod backend;
