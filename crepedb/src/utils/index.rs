@@ -124,23 +124,25 @@ where
     }
 }
 
-#[cfg(test)]
+// #[cfg(test)]
 pub mod tests {
     use crate::{
-        backend::{BackendError, ReadTxn},
+        backend::{BackendError, ReadTxn as BackendReadTxn},
         utils::snapshot_reader,
-        Result, SnapshotId,
+        ReadTxn, Result,
     };
 
     use super::index_reader;
 
-    pub fn check_index_10<T, E>(txn: &T, snapshot: SnapshotId) -> Result<()>
+    pub fn check_index_10<T, E>(txn: ReadTxn<T, E>) -> Result<()>
     where
-        T: ReadTxn<E>,
+        T: BackendReadTxn<E>,
         E: BackendError,
     {
-        let idx = index_reader(txn)?;
-        let snp = snapshot_reader(txn)?;
+        let idx = index_reader(&txn.txn)?;
+        let snp = snapshot_reader(&txn.txn)?;
+
+        let snapshot = txn.snapshot_id.clone();
 
         macro_rules! check_inner {
             (

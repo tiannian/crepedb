@@ -1,6 +1,17 @@
 [workspace]
 resolver = "2"
-members = ["crepedb", "backends/redb", "tool", "backends/sled", "backends/mdbx", "backends/rocksdb"]
+members = [
+  "crepedb",
+  "backends/redb",
+  "tool",
+  "backends/sled",
+  "backends/mdbx",
+  "backends/rocksdb",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
 
 [workspace.dependencies]
 log = "0.4.20"

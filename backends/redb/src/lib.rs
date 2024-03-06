@@ -33,9 +33,16 @@ mod tests {
 
         let db: CrepeDB<RedbDatabase> = CrepeDB::open("/tmp/__crepedb/snapshot_10")?;
 
+        let sid = SnapshotId::preroot();
+
+        let write_txn = db.write(sid)?;
+        log::info!("{:?}", write_txn);
+
+        write_txn.commit()?;
+
         let mut sid = SnapshotId::preroot();
 
-        for _ in 1..14 {
+        for _ in 1..13 {
             log::trace!("SnapshotId is :{:?}", sid);
 
             let write_txn = db.write(sid)?;
@@ -45,6 +52,10 @@ mod tests {
 
             sid = nsid;
         }
+
+        let txn = db.read(sid)?;
+
+        crepedb::utils::tests::check_index_10(txn)?;
 
         fs::remove_file("/tmp/__crepedb/snapshot_10").unwrap();
 

@@ -31,8 +31,6 @@ where
 
         if snapshot_id == SnapshotId::preroot() {
             // Create root.
-            // Need check already have root?
-
             let snapshot = utils::snapshot_writer(&txn)?;
 
             if snapshot.has(&snapshot_id)? {
