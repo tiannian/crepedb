@@ -69,18 +69,60 @@ pub mod read_tests {
         let root = rtxn.commit()?;
 
         // Create s1 on root
-        let s1 = db.write(root)?;
+        let s1 = db.write(root.clone())?;
         {
             let mut t = s1.open_table(table)?;
             t.set(key.clone(), vec![1])?;
         }
         let s1 = s1.commit()?;
 
+        // Try to read on s1
         {
             let rs1 = db.read(s1)?;
             let t = rs1.open_table(table)?;
             let r = t.get(key.clone())?;
             assert_eq!(r, Some(vec![1]));
+        }
+
+        // Create s1 on root
+        let s1 = db.write(root)?;
+        {
+            let mut t = s1.open_table(table)?;
+            t.set(key.clone(), vec![2])?;
+        }
+        let s2 = s1.commit()?;
+
+        let s2 = {
+            let s = db.write(s2)?;
+            s.commit()?
+        };
+
+        let s2 = {
+            let s = db.write(s2)?;
+            s.commit()?
+        };
+
+        let s2 = {
+            let s = db.write(s2)?;
+            s.commit()?
+        };
+
+        let s2 = {
+            let s = db.write(s2)?;
+            s.commit()?
+        };
+
+        let s2 = {
+            let s = db.write(s2)?;
+            s.commit()?
+        };
+
+        // Try to read on s2
+        {
+            let rs1 = db.read(s2.clone())?;
+            let t = rs1.open_table(table)?;
+            let r = t.get(key.clone())?;
+            assert_eq!(r, Some(vec![2]));
         }
 
         drop(db);

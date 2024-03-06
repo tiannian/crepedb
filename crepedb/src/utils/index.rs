@@ -240,7 +240,9 @@ pub mod tests {
 
         fs::create_dir_all(path).unwrap();
 
-        let db: CrepeDB<B> = CrepeDB::open("/tmp/__crepedb/snapshot_10")?;
+        let path = "/tmp/__crepedb/snapshot_10";
+
+        let db: CrepeDB<B> = CrepeDB::open(path)?;
 
         let sid = SnapshotId::preroot();
 
@@ -252,8 +254,6 @@ pub mod tests {
         let mut sid = SnapshotId::root();
 
         for _ in 1..12 {
-            log::trace!("SnapshotId is :{:?}", sid);
-
             let write_txn = db.write(sid)?;
             log::info!("{:?}", write_txn);
 
@@ -266,7 +266,7 @@ pub mod tests {
 
         check_index_10(txn)?;
 
-        fs::remove_file("/tmp/__crepedb/snapshot_10").unwrap();
+        fs::remove_file(path).unwrap();
 
         Ok(())
     }

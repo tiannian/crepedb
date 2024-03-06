@@ -55,7 +55,7 @@ where
             let version = Version::from_bytes(&k[key_len..key_len + 8])?;
             let sss = SnapshotId::from_bytes(&k[key_len + 8..key_len + 16])?;
 
-            log::debug!("version: {version}, snapshot: {sss:?}, value: {v:?}");
+            log::trace!("version: {version}, snapshot: {sss:?}, value: {v:?}");
 
             if version > self.version {
                 continue;
@@ -70,18 +70,21 @@ where
                 let skip_i = diff.ilog2();
                 let skip = 1 << skip_i;
 
+                log::trace!("Read snapshot: {snapshot:?}, target_version: {target_version}, version: {version}, skip_n: {skip_i}, skip numer is: {skip}");
+
                 if let Some(snapshot_id) = self.index.read(&snapshot, skip_i)? {
                     snapshot = snapshot_id;
                 } else {
-                    // TODO: Consider return error or panic
                     log::warn!("Index is wrong");
-                    return Ok(None);
+                    break;
                 }
 
                 target_version -= skip;
             }
 
             if sss == snapshot && version.0 == target_version {
+                log::trace!("The snapshot: {snapshot:?} is ancestor of snapshot: {sss:?}");
+
                 let res = DataOp::from_bytes(v)?;
 
                 return Ok(res.into());
