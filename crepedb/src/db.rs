@@ -1,6 +1,6 @@
 use core::marker::PhantomData;
 
-use crate::{backend::Backend, utils, Error, Result, SnapshotId, WriteTxn};
+use crate::{backend::Backend, utils, Error, ReadTxn, Result, SnapshotId, WriteTxn};
 
 pub struct CrepeDB<B> {
     pub(crate) backend: B,
@@ -14,6 +14,16 @@ where
         let backend = B::open_or_create(path).map_err(Error::backend)?;
 
         Ok(Self { backend })
+    }
+
+    pub fn read(&self, snapshot_id: SnapshotId) -> Result<ReadTxn<B::ReadTxn<'_>, B::Error>> {
+        let txn = self.backend.read_txn().map_err(Error::backend)?;
+
+        Ok(ReadTxn {
+            txn,
+            snapshot_id,
+            marker: PhantomData,
+        })
     }
 
     pub fn write(&self, snapshot_id: SnapshotId) -> Result<WriteTxn<B::WriteTxn<'_>, B::Error>> {
