@@ -4,10 +4,10 @@ use alloc::vec::Vec;
 
 use crate::{
     backend::{BackendError, ReadTable, ReadTxn, WriteTable, WriteTxn},
-    Error, Result, SnapshotId,
+    Error, Result, SnapshotId, Version,
 };
 
-use super::{consts, parse_u64};
+use super::consts;
 
 pub struct SnapshotTable<T, E> {
     table: T,
@@ -47,14 +47,14 @@ where
     T: ReadTable<E>,
     E: BackendError,
 {
-    pub fn read(&self, snapshot_id: &SnapshotId) -> Result<(u64, SnapshotId)> {
+    pub fn read(&self, snapshot_id: &SnapshotId) -> Result<(Version, SnapshotId)> {
         let bytes = self
             .table
             .get(snapshot_id.to_bytes().to_vec())
             .map_err(Error::backend)?
             .ok_or(Error::MissingSnaopshot(snapshot_id.clone()))?;
 
-        let r = parse_u64(&bytes)?;
+        let r = Version::from_bytes(&bytes)?;
         let s = SnapshotId::from_bytes(&bytes[8..])?;
 
         Ok((r, s))
@@ -91,11 +91,11 @@ where
         &mut self,
         snapshot_id: &SnapshotId,
         parent: &SnapshotId,
-        version: u64,
+        version: &Version,
     ) -> Result<()> {
         let mut value = Vec::with_capacity(16);
 
-        value.extend_from_slice(&version.to_le_bytes());
+        value.extend_from_slice(&version.to_bytes());
         value.extend_from_slice(&parent.to_bytes());
 
         self.table

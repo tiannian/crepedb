@@ -2,8 +2,8 @@ use core::marker::PhantomData;
 
 use crate::{
     backend::{BackendError, Range, ReadTable as BackendReadTable},
-    utils::{self, IndexTable},
-    Bytes, DataOp, Error, Result, SnapshotId, TableType,
+    utils::IndexTable,
+    Bytes, DataOp, Error, Result, SnapshotId, TableType, Version,
 };
 
 pub struct ReadTable<T, E> {
@@ -14,7 +14,7 @@ pub struct ReadTable<T, E> {
     pub(crate) table_type: TableType,
 
     pub(crate) snapshot_id: SnapshotId,
-    pub(crate) version: u64,
+    pub(crate) version: Version,
 
     pub(crate) marker: PhantomData<E>,
 }
@@ -52,7 +52,7 @@ where
         let mut iter = self.table.range(begin, end).map_err(Error::backend)?;
 
         while let Some((k, v)) = iter.back().map_err(Error::backend)? {
-            let version = utils::parse_u64(&k[key_len..key_len + 8])?;
+            let version = Version::from_bytes(&k[key_len..key_len + 8])?;
             let sss = SnapshotId::from_bytes(&k[key_len + 8..key_len + 16])?;
 
             log::debug!("version: {version}, snapshot: {sss:?}, value: {v:?}");
@@ -61,11 +61,11 @@ where
                 continue;
             }
 
-            let mut target_version = self.version;
+            let mut target_version = self.version.0;
             let mut snapshot = self.snapshot_id.clone();
 
-            while target_version > version {
-                let diff = target_version - version;
+            while target_version > version.0 {
+                let diff = target_version - version.0;
 
                 let skip_i = diff.ilog2();
                 let skip = 1 << skip_i;
@@ -81,7 +81,7 @@ where
                 target_version -= skip;
             }
 
-            if sss == snapshot && version == target_version {
+            if sss == snapshot && version.0 == target_version {
                 let res = DataOp::from_bytes(v)?;
 
                 return Ok(res.into());

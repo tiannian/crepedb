@@ -1,6 +1,6 @@
 use core::marker::PhantomData;
 
-use crate::{backend::Backend, utils, Error, ReadTxn, Result, SnapshotId, WriteTxn};
+use crate::{backend::Backend, utils, Error, ReadTxn, Result, SnapshotId, Version, WriteTxn};
 
 pub struct CrepeDB<B> {
     pub(crate) backend: B,
@@ -41,7 +41,7 @@ where
 
             Ok(WriteTxn {
                 txn,
-                version: 0,
+                version: Version::root(),
                 new_snapshot_id: SnapshotId::root(),
                 parent_snapshot_id: None,
                 snapshot_id,
@@ -58,7 +58,7 @@ where
 
             Ok(WriteTxn {
                 txn,
-                version: version + 1,
+                version,
                 new_snapshot_id,
                 parent_snapshot_id: Some(parent_snapshot_id),
                 snapshot_id,

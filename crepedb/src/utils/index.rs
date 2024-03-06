@@ -5,7 +5,7 @@ use alloc::vec::Vec;
 use crate::{
     backend::{BackendError, ReadTable, ReadTxn, WriteTable, WriteTxn},
     utils::fast_ceil_log2,
-    Error, Result, SnapshotId,
+    Error, Result, SnapshotId, Version,
 };
 
 use super::consts;
@@ -83,10 +83,15 @@ where
         Ok(())
     }
 
-    pub fn write(&mut self, snapshot: &SnapshotId, k1: &SnapshotId, version: u64) -> Result<()> {
-        debug_assert!(version >= 1);
+    pub fn write(
+        &mut self,
+        snapshot: &SnapshotId,
+        k1: &SnapshotId,
+        version: Version,
+    ) -> Result<()> {
+        debug_assert!(version >= 1.into());
 
-        let step = fast_ceil_log2(version);
+        let step = fast_ceil_log2(version.0);
 
         if step == 0 {
             return Ok(());
@@ -155,13 +160,13 @@ pub mod tests {
             ) => {
                 {
                     let (v, n) = snp.read(&$p)?;
-                    assert_eq!(v, $bi);
+                    assert_eq!(v, $bi.into());
                     $(
 
                         {
                             let s = idx.read(&$p, $i)?.unwrap();
                             let (v, _) = snp.read(&s)?;
-                            assert_eq!(v, $v);
+                            assert_eq!(v, $v.into());
                         }
                     )*
 
@@ -179,20 +184,20 @@ pub mod tests {
             ) => {
                 {
                     let (v, n) = snp.read(&$p)?;
-                    assert_eq!(v, $bi);
+                    assert_eq!(v, $bi.into());
 
                     $(
 
                         {
                             let s = idx.read(&$p, $i)?.unwrap();
                             let (v, _) = snp.read(&s)?;
-                            assert_eq!(v, $v);
+                            assert_eq!(v, $v.into());
                         }
                     )*
 
                     let s = idx.read(&$p, $ei)?.unwrap();
                     let (v, _) = snp.read(&s)?;
-                    assert_eq!(v, $ev);
+                    assert_eq!(v, $ev.into());
                     n
                 }
             };
@@ -203,7 +208,7 @@ pub mod tests {
             ) => {
                 {
                     let (v, n) = snp.read(&$p)?;
-                    assert_eq!(v, $bi);
+                    assert_eq!(v, $bi.into());
 
                     n
                 }

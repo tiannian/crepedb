@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use crate::{
     backend::{BackendError, WriteTable as BackendWriteTable},
-    Bytes, DataOp, Error, Result, SnapshotId, TableType,
+    Bytes, DataOp, Error, Result, SnapshotId, TableType, Version,
 };
 
 pub struct WriteTable<T, E> {
@@ -11,7 +11,7 @@ pub struct WriteTable<T, E> {
     pub(crate) table_type: TableType,
 
     pub(crate) snapshot_id: SnapshotId,
-    pub(crate) version: u64,
+    pub(crate) version: Version,
 
     pub(crate) marker: PhantomData<E>,
 }
@@ -72,7 +72,7 @@ where
     }
 
     fn build_key(&self, mut key: Bytes) -> Bytes {
-        key.extend_from_slice(&self.version.to_le_bytes());
+        key.extend_from_slice(&self.version.to_bytes());
         key.extend_from_slice(&self.snapshot_id.to_bytes());
 
         key

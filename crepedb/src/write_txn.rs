@@ -2,7 +2,7 @@ use core::{fmt::Debug, marker::PhantomData};
 
 use crate::{
     backend::{BackendError, WriteTxn as BackendWriteTxn},
-    utils, Error, Result, SnapshotId, TableType, WriteTable,
+    utils, Error, Result, SnapshotId, TableType, Version, WriteTable,
 };
 
 pub struct WriteTxn<T, E> {
@@ -12,7 +12,7 @@ pub struct WriteTxn<T, E> {
     pub(crate) parent_snapshot_id: Option<SnapshotId>,
     pub(crate) snapshot_id: SnapshotId,
     pub(crate) new_snapshot_id: SnapshotId,
-    pub(crate) version: u64,
+    pub(crate) version: Version,
 
     pub(crate) marker: PhantomData<E>,
 }
@@ -55,7 +55,7 @@ where
             table_type,
             snapshot_id: self.new_snapshot_id.clone(),
             table: self.txn.open_table(table).map_err(Error::backend)?,
-            version: self.version,
+            version: self.version.clone(),
         };
 
         Ok(table)
@@ -66,7 +66,7 @@ where
             let mut snapshot = utils::snapshot_writer(&self.txn)?;
 
             // write snapshot info
-            snapshot.write(&self.new_snapshot_id, &self.snapshot_id, self.version)?;
+            snapshot.write(&self.new_snapshot_id, &self.snapshot_id, &self.version)?;
 
             // write next snapshot id
             snapshot.write_next_snapahot(&self.new_snapshot_id)?;

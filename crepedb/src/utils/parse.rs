@@ -13,5 +13,9 @@ pub fn parse_u64(b: &[u8]) -> Result<u64> {
         ]
     });
 
-    Ok(u64::from_le_bytes(r))
+    Ok(u64::from_be_bytes(r))
+}
+
+pub fn dump_u64(v: u64) -> [u8; 8] {
+    v.to_be_bytes()
 }
