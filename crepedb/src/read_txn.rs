@@ -32,6 +32,7 @@ where
         let table = ReadTable {
             table,
             index,
+            snapshot: sr,
             table_type,
             snapshot_id: self.snapshot_id.clone(),
             version,
@@ -123,6 +124,14 @@ pub mod read_tests {
             let t = rs1.open_table(table)?;
             let r = t.get(key.clone())?;
             assert_eq!(r, Some(vec![2]));
+        }
+
+        // Try to read on s2
+        {
+            let rs1 = db.read(s2.clone())?;
+            let t = rs1.open_table(table)?;
+            let r = t.get(vec![100])?;
+            assert_eq!(r, None);
         }
 
         drop(db);

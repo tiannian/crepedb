@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use crate::{
     backend::{BackendError, Range, ReadTable as BackendReadTable},
-    utils::IndexTable,
+    utils::{IndexTable, SnapshotTable},
     Bytes, DataOp, Error, Result, SnapshotId, TableType, Version,
 };
 
@@ -10,6 +10,7 @@ pub struct ReadTable<T, E> {
     pub(crate) table: T,
 
     pub(crate) index: IndexTable<T, E>,
+    pub(crate) snapshot: SnapshotTable<T, E>,
 
     pub(crate) table_type: TableType,
 
@@ -67,6 +68,13 @@ where
             while target_version > version.0 {
                 let diff = target_version - version.0;
 
+                if diff == 1 {
+                    let (_, s) = self.snapshot.read(&snapshot)?;
+                    snapshot = s;
+                    target_version = version.0;
+                    break;
+                }
+
                 let skip_i = diff.ilog2();
                 let skip = 1 << skip_i;
 
@@ -75,7 +83,6 @@ where
                 if let Some(snapshot_id) = self.index.read(&snapshot, skip_i)? {
                     snapshot = snapshot_id;
                 } else {
-                    log::warn!("Index is wrong");
                     break;
                 }
 
@@ -83,7 +90,10 @@ where
             }
 
             if sss == snapshot && version.0 == target_version {
-                log::trace!("The snapshot: {snapshot:?} is ancestor of snapshot: {sss:?}");
+                log::trace!(
+                    "The snapshot: {sss:?} is ancestor of snapshot: {:?}",
+                    self.snapshot_id
+                );
 
                 let res = DataOp::from_bytes(v)?;
 
