@@ -35,15 +35,4 @@ cargo add crepedb
 cargo add crepedb-redb # replace backend crate you want to use.
 ```
 
-### Documentation
-
-## Commandline Tool
-
-### Create Database
-
-### Create Table
-
-### Read
-
-### Snapshot Tree
 
