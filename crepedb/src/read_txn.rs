@@ -43,6 +43,7 @@ where
     }
 }
 
+#[doc(hidden)]
 #[cfg(feature = "tests")]
 pub mod read_tests {
     use std::{fs, path::Path};
