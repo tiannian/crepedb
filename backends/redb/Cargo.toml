@@ -2,6 +2,9 @@
 name = "crepedb-redb"
 version = "0.1.0"
 edition = "2021"
+description.workspace = true
+license.workspace = true
+repository.workspace = true
 
 [dependencies]
 crepedb = { workspace = true, features = ["tests"] }
