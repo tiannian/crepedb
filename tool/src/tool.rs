@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
 use clap::{Parser, Subcommand, ValueEnum};
+use crepedb_tool::{Snapshot, Table};
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
 pub enum Backend {
@@ -22,9 +23,10 @@ pub struct Args {
 
 #[derive(Debug, Subcommand)]
 pub enum SubCmd {
-    Table,
-    Snapshot,
+    Table(Table),
+    Snapshot(Snapshot),
     Value,
+    Commit,
 }
 
 fn main() {
