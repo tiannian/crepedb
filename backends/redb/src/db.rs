@@ -1,10 +1,24 @@
 use crepedb::backend::Backend;
-use redb::{Database, Error};
+use redb::{backends::InMemoryBackend, Builder, Database, Error};
 
 use crate::{RedbReadTxn, RedbWriteTxn};
 
 pub struct RedbDatabase {
     inner: Database,
+}
+
+impl RedbDatabase {
+    pub fn open_or_create(path: &str) -> Result<Self, Error> {
+        let db = Database::create(path)?;
+        Ok(Self { inner: db })
+    }
+
+    pub fn memory() -> Result<Self, Error> {
+        let backend = InMemoryBackend::new();
+
+        let db = Builder::new().create_with_backend(backend)?;
+        Ok(Self { inner: db })
+    }
 }
 
 impl Backend for RedbDatabase {
@@ -24,10 +38,5 @@ impl Backend for RedbDatabase {
         let txn = self.inner.begin_write()?;
 
         Ok(RedbWriteTxn { inner: txn })
-    }
-
-    fn open_or_create(path: &str) -> Result<Self, Self::Error> {
-        let db = Database::create(path)?;
-        Ok(Self { inner: db })
     }
 }

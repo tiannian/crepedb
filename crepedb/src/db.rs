@@ -11,11 +11,9 @@ impl<B> CrepeDB<B>
 where
     B: Backend,
 {
-    /// Open a database. Create new database if target not exists.
-    pub fn open(path: &str) -> Result<Self> {
-        let backend = B::open_or_create(path).map_err(Error::backend)?;
-
-        Ok(Self { backend })
+    /// Create database using backend.
+    pub fn new(backend: B) -> Self {
+        Self { backend }
     }
 
     /// Create a transaction to read data.

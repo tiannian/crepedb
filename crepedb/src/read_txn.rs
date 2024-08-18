@@ -46,21 +46,13 @@ where
 #[doc(hidden)]
 #[cfg(feature = "tests")]
 pub mod read_tests {
-    use std::{fs, path::Path};
-
     use alloc::vec;
 
     use crate::{backend::Backend, CrepeDB, Result, SnapshotId, TableType};
 
-    pub fn test_read<B>() -> Result<()>
-    where
-        B: Backend,
-    {
-        let path = Path::new("/tmp/__crepedb");
-
-        fs::create_dir_all(path).unwrap();
-
-        let db: CrepeDB<B> = CrepeDB::open("/tmp/__crepedb/test_read")?;
+    pub fn test_read(backend: impl Backend) -> Result<()> {
+        // let db: CrepeDB<B> = CrepeDB::open("/tmp/__crepedb/test_read")?;
+        let db = CrepeDB::new(backend);
 
         let table = "test";
         let key = vec![2];
@@ -136,7 +128,6 @@ pub mod read_tests {
         }
 
         drop(db);
-        fs::remove_file("/tmp/__crepedb/test_read").unwrap();
 
         Ok(())
     }

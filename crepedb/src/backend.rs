@@ -11,8 +11,6 @@ pub trait Backend: Sized + 'static {
 
     type WriteTxn<'a>: WriteTxn<Self::Error>;
 
-    fn open_or_create(path: &str) -> Result<Self, Self::Error>;
-
     fn read_txn(&self) -> Result<Self::ReadTxn<'_>, Self::Error>;
 
     fn write_txn(&self) -> Result<Self::WriteTxn<'_>, Self::Error>;

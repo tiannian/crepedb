@@ -132,7 +132,6 @@ where
 #[doc(hidden)]
 #[cfg(feature = "tests")]
 pub mod tests {
-    use std::{fs, path::Path};
 
     use crate::{
         backend::{Backend, BackendError, ReadTxn as BackendReadTxn},
@@ -233,17 +232,8 @@ pub mod tests {
         Ok(())
     }
 
-    pub fn test_db_10<B>() -> Result<()>
-    where
-        B: Backend,
-    {
-        let path = Path::new("/tmp/__crepedb");
-
-        fs::create_dir_all(path).unwrap();
-
-        let path = "/tmp/__crepedb/snapshot_10";
-
-        let db: CrepeDB<B> = CrepeDB::open(path)?;
+    pub fn test_db_10(backend: impl Backend) -> Result<()> {
+        let db = CrepeDB::new(backend);
 
         let sid = SnapshotId::preroot();
 
@@ -266,8 +256,6 @@ pub mod tests {
         let txn = db.read(sid)?;
 
         check_index_10(txn)?;
-
-        fs::remove_file(path).unwrap();
 
         Ok(())
     }

@@ -23,6 +23,8 @@ mod tests {
     fn test_db_10() {
         let _ = env_logger::builder().is_test(true).try_init();
 
-        crepedb::utils::tests::test_db_10::<RedbDatabase>().unwrap();
+        let backend = RedbDatabase::memory().unwrap();
+
+        crepedb::utils::tests::test_db_10(backend).unwrap();
     }
 }

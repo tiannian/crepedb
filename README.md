@@ -35,4 +35,12 @@ cargo add crepedb
 cargo add crepedb-redb # replace backend crate you want to use.
 ```
 
+### Usage
+
+```rust
+use crepedb::CrepeDB;
+use crepedb_redb::RedbDatabase;
+
+let db = CrepeDB::<RedbDatabase>::open("/path/to/database");
+```
 
