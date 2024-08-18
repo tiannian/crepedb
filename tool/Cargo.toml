@@ -7,5 +7,9 @@ license.workspace = true
 repository.workspace = true
 readme.workspace = true
 
+[[bin]]
+name = "crepedb"
+path = "./src/tool.rs"
+
 [dependencies]
-clap = { version = "4.5.16", features = ["derive"] }
+clap = { version = "4.5.16", features = ["derive", "env"] }
