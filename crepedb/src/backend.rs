@@ -1,3 +1,5 @@
+//! Traits of storage backend
+
 use core::fmt::{Debug, Display};
 
 use crate::Bytes;

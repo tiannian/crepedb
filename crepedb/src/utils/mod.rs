@@ -1,3 +1,5 @@
+//! Some utils
+
 mod index;
 pub use index::*;
 

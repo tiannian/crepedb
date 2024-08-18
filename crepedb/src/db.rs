@@ -2,6 +2,7 @@ use core::marker::PhantomData;
 
 use crate::{backend::Backend, utils, Error, ReadTxn, Result, SnapshotId, Version, WriteTxn};
 
+/// Versioned and forkable Database
 pub struct CrepeDB<B> {
     pub(crate) backend: B,
 }
@@ -10,12 +11,14 @@ impl<B> CrepeDB<B>
 where
     B: Backend,
 {
+    /// Open a database. Create new database if target not exists.
     pub fn open(path: &str) -> Result<Self> {
         let backend = B::open_or_create(path).map_err(Error::backend)?;
 
         Ok(Self { backend })
     }
 
+    /// Create a transaction to read data.
     pub fn read(&self, snapshot_id: SnapshotId) -> Result<ReadTxn<B::ReadTxn<'_>, B::Error>> {
         let txn = self.backend.read_txn().map_err(Error::backend)?;
 
@@ -26,6 +29,7 @@ where
         })
     }
 
+    /// Create a transaction to write data.
     pub fn write(&self, snapshot_id: SnapshotId) -> Result<WriteTxn<B::WriteTxn<'_>, B::Error>> {
         let txn = self.backend.write_txn().map_err(Error::backend)?;
 
