@@ -15,6 +15,7 @@ edition = "2021"
 description = "An versioned and forkable embedded Key-Value database."
 license = "Apache-2.0"
 repository = "https://github.com/tiannian/crepedb"
+readme = "./README.md"
 
 [workspace.dependencies]
 log = "0.4.20"
