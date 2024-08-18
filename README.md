@@ -41,6 +41,7 @@ cargo add crepedb-redb # replace backend crate you want to use.
 use crepedb::CrepeDB;
 use crepedb_redb::RedbDatabase;
 
-let db = CrepeDB::<RedbDatabase>::open("/path/to/database");
+let backend = RedbDatabase::memory().unwarp();
+let db = CrepeDB::new(backend);
 ```
 
