@@ -1,6 +1,6 @@
 # CrepeDB
 
-An versioned and forkable embedded Key-Value database.
+An versioned and forkable embedded Key-Value database. It aims to used as storage of blockchain.
 
 ## Supported Features
 
