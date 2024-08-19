@@ -11,7 +11,7 @@ An versioned and forkable embedded Key-Value database.
 - Versioned and Basic table at one transaction.
 - High-performance reads and inserts
 - Multi backend support.
-- Provide tools for analyzing databases, migrating, and managing data.
+- [ ] Provide tools for analyzing databases, migrating, and managing data. (WIP)
 
 ## backends
 
@@ -45,3 +45,6 @@ let backend = RedbDatabase::memory().unwarp();
 let db = CrepeDB::new(backend);
 ```
 
+### Read snapshot
+
+You can use `crepedb` command line to read database. Reference to [tool](https://github.com/tiannian/crepedb/tree/main/tool).
