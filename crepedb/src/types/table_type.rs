@@ -1,24 +1,29 @@
-use crate::{Error, Result};
+use crate::Error;
 
+/// Type of table
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TableType {
     Basic,
     Versioned,
 }
 
-impl TableType {
-    pub fn to_byte(&self) -> u8 {
-        match self {
-            Self::Basic => 1,
-            Self::Versioned => 2,
+impl From<TableType> for u8 {
+    fn from(value: TableType) -> Self {
+        match value {
+            TableType::Basic => 1,
+            TableType::Versioned => 2,
         }
     }
+}
 
-    pub fn from_byte(v: u8) -> Result<Self> {
-        match v {
+impl TryFrom<u8> for TableType {
+    type Error = Error;
+
+    fn try_from(value: u8) -> core::result::Result<Self, Self::Error> {
+        match value {
             1 => Ok(Self::Basic),
             2 => Ok(Self::Versioned),
-            _ => Err(Error::UnexpectedTableType(v)),
+            _ => Err(Error::UnexpectedTableType(value)),
         }
     }
 }

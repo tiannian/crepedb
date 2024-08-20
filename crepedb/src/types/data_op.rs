@@ -1,9 +1,12 @@
-use alloc::{vec, vec::Vec};
+use alloc::vec;
 
 use crate::{Bytes, Error, Result};
 
+/// Operation of data.
 pub enum DataOp {
-    Set(Vec<u8>),
+    /// Set data
+    Set(Bytes),
+    /// Delete data
     Del,
 }
 
@@ -17,7 +20,8 @@ impl From<DataOp> for Option<Bytes> {
 }
 
 impl DataOp {
-    pub fn to_bytes(self) -> Vec<u8> {
+    /// Convert this type to bytes.
+    pub fn to_bytes(self) -> Bytes {
         match self {
             Self::Set(mut v) => {
                 v.push(0x00);
@@ -27,6 +31,7 @@ impl DataOp {
         }
     }
 
+    /// Convert type from bytes
     pub fn from_bytes(bytes: Bytes) -> Result<DataOp> {
         let mut bytes = bytes;
 

@@ -2,11 +2,11 @@
 resolver = "2"
 members = [
   "crepedb",
-  "backends/redb",
-  "tool",
-  "backends/sled",
-  "backends/mdbx",
-  "backends/rocksdb",
+  # "backends/redb",
+  # "tool",
+  # "backends/sled",
+  # "backends/mdbx",
+  # "backends/rocksdb",
 ]
 
 [workspace.package]

@@ -2,6 +2,7 @@ use alloc::boxed::Box;
 
 use crate::{backend::BackendError, SnapshotId};
 
+/// Error
 #[derive(Debug)]
 pub enum Error {
     MissingSnaopshot(SnapshotId),
@@ -23,4 +24,5 @@ impl Error {
     }
 }
 
+/// Result
 pub type Result<T> = core::result::Result<T, Error>;
