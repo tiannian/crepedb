@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use crepedb::backend::Backend;
 use redb::{backends::InMemoryBackend, Builder, Database, Error};
 
@@ -8,7 +10,7 @@ pub struct RedbDatabase {
 }
 
 impl RedbDatabase {
-    pub fn open_or_create(path: &str) -> Result<Self, Error> {
+    pub fn open_or_create(path: impl AsRef<Path>) -> Result<Self, Error> {
         let db = Database::create(path)?;
         Ok(Self { inner: db })
     }

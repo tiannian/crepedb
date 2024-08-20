@@ -1,3 +1,4 @@
+use anyhow::Result;
 use clap::Args;
 
 #[derive(Debug, Clone)]
@@ -26,4 +27,10 @@ pub struct Snapshot {
 
     #[arg(long)]
     id: Option<u64>,
+}
+
+impl Snapshot {
+    pub fn exec(self) -> Result<()> {
+        Ok(())
+    }
 }

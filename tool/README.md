@@ -36,21 +36,15 @@ crepedb snapshot --id 100
 
 ```bash
 # Get value by table and Key
-crepedb get table:key
+crepedb value get table:key
 
 # Get value by table and Key at snapshot
-crepedb get table:key --snapshot-id 100
-```
-
-### Create Database
-
-```bash
-crepedb --database /path/to/db --backend redb new
+crepedb value get table:key --snapshot-id 100
 ```
 
 ### Create table
 
 ```bash
-crepedb table new --type basic table-name --database /path/to/database --backend redb
+crepedb table new --type basic table-name
 ```
 

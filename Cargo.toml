@@ -25,3 +25,4 @@ hex = { version = "0.4.3", default-features = false, features = ["alloc"] }
 seq-macro = "0.3.5"
 
 crepedb = { path = "crepedb", version = "0.1" }
+crepedb-redb = { path = "backends/redb", version = "0.1" }
