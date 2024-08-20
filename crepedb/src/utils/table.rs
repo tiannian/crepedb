@@ -10,7 +10,7 @@ use crate::{
 use super::consts;
 
 pub struct MetaTable<T, E> {
-    table: T,
+    pub(crate) table: T,
     marker: PhantomData<E>,
 }
 

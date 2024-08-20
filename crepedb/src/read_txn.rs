@@ -41,6 +41,12 @@ where
 
         Ok(table)
     }
+
+    // pub fn iter_tables(&self) -> Result<()> {
+    // let meta = utils::meta_reader(&self.txn)?;
+
+    // Ok(())
+    // }
 }
 
 #[doc(hidden)]

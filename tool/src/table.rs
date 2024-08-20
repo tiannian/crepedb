@@ -1,5 +1,5 @@
 use anyhow::Result;
-use clap::{Args, Subcommand};
+use clap::{Args, Subcommand, ValueEnum};
 
 #[derive(Debug, Args)]
 pub struct Table {
@@ -14,7 +14,25 @@ impl Table {
 }
 
 #[derive(Debug, Subcommand)]
-pub enum TableCmd {
+enum TableCmd {
+    /// List all table
     List,
-    New,
+    /// Create new table
+    New(New),
+}
+
+#[derive(ValueEnum, Clone, Debug)]
+enum TableType {
+    Basic,
+    Versioned,
+}
+
+#[derive(Debug, Args)]
+struct New {
+    /// Type of table
+    #[arg(name = "type", short, long)]
+    pub ty: TableType,
+
+    /// Name of table
+    pub name: String,
 }
