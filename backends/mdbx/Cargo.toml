@@ -1,8 +1,18 @@
 [package]
 name = "crepedb-mdbx"
-version = "0.1.0"
-edition = "2021"
+version.workspace = true
+edition.workspace = true
+description.workspace = true
+license.workspace = true
+repository.workspace = true
+readme.workspace = true
 
 [dependencies]
-crepedb = { workspace = true, features = ["tests"] }
-libmdbx = "0.4.2"
+crepedb-core = { workspace = true, features = ["tests"] }
+
+log.workspace = true
+
+libmdbx = "0.6.4"
+
+[dev-dependencies]
+env_logger = "0.11.2"
