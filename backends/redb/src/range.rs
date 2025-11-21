@@ -2,12 +2,15 @@ use redb::{Error, Range};
 
 use crate::types::BytesTy;
 
+/// A range iterator wrapper for redb.
+///
+/// Implements the CrepeDB `Range` trait for redb's range iterator.
 pub struct RedbRange<'a> {
     pub(crate) inner: Range<'a, BytesTy, BytesTy>,
 }
 
-impl<'a> crepedb::backend::Range<Error> for RedbRange<'a> {
-    fn back(&mut self) -> Result<Option<(crepedb::Bytes, crepedb::Bytes)>, Error> {
+impl<'a> crepedb_core::backend::Range<Error> for RedbRange<'a> {
+    fn back(&mut self) -> Result<Option<(crepedb_core::Bytes, crepedb_core::Bytes)>, Error> {
         let r = self.inner.next();
 
         if let Some(r) = r {

@@ -1,8 +1,12 @@
-use crepedb::backend::WriteTxn;
+use crepedb_core::backend::WriteTxn;
 use redb::{Error, TableDefinition, WriteTransaction};
 
 use crate::RedbWriteTable;
 
+/// A write transaction wrapper for redb.
+///
+/// Implements the CrepeDB `WriteTxn` trait, providing read-write access to tables
+/// and the ability to commit changes.
 pub struct RedbWriteTxn {
     pub inner: WriteTransaction,
 }

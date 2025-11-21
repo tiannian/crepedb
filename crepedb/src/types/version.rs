@@ -2,6 +2,10 @@ use core::fmt::Display;
 
 use crate::{utils, Result};
 
+/// Version number for database snapshots.
+///
+/// Versions are monotonically increasing numbers that track the lineage of snapshots.
+/// Each child snapshot has a version one greater than its parent.
 #[derive(Debug, PartialEq, Eq, Clone, PartialOrd, Ord)]
 pub struct Version(pub(crate) u64);
 
@@ -24,15 +28,22 @@ impl Display for Version {
 }
 
 impl Version {
+    /// Convert the version to bytes.
     pub fn to_bytes(&self) -> [u8; 8] {
         utils::dump_u64(self.0)
     }
 
+    /// Parse a version from bytes.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the byte slice has the wrong length.
     pub fn from_bytes(bytes: &[u8]) -> Result<Self> {
         let r = utils::parse_u64(bytes)?;
         Ok(Self(r))
     }
 
+    /// Get the root version (version 0).
     pub const fn root() -> Self {
         Self(0)
     }

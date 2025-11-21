@@ -5,6 +5,10 @@ use crate::{
     utils, Error, ReadTable, Result, SnapshotId,
 };
 
+/// A read transaction for querying data at a specific snapshot.
+///
+/// Read transactions provide a consistent view of the database at a particular
+/// snapshot in time. Multiple read transactions can run concurrently.
 pub struct ReadTxn<T, E> {
     pub(crate) txn: T,
 
@@ -18,6 +22,17 @@ where
     T: BackendReadTxn<E>,
     E: BackendError,
 {
+    /// Open a table for reading.
+    ///
+    /// Returns a read-only view of the table at this transaction's snapshot.
+    ///
+    /// # Arguments
+    ///
+    /// * `table` - The name of the table to open
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the table does not exist or cannot be opened.
     pub fn open_table(&self, table: &str) -> Result<ReadTable<T::Table<'_>, E>> {
         let meta = utils::meta_reader(&self.txn)?;
         let table_type = meta.read_type(table)?;

@@ -1,5 +1,5 @@
 [package]
-name = "crepedb"
+name = "crepedb-core"
 version.workspace = true
 edition.workspace = true
 description.workspace = true

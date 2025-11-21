@@ -1,6 +1,15 @@
-use crepedb::Bytes;
+//! Type definitions for redb integration.
+//!
+//! This module provides types that bridge CrepeDB's byte arrays with redb's
+//! type system.
+
+use crepedb_core::Bytes;
 use redb::{Key, Value};
 
+/// A type adapter for using CrepeDB's `Bytes` type with redb.
+///
+/// This struct implements redb's `Key` and `Value` traits, allowing
+/// `Vec<u8>` to be used as both keys and values in redb tables.
 #[derive(Debug)]
 pub struct BytesTy;
 
@@ -10,7 +19,7 @@ impl Value for BytesTy {
     type SelfType<'a> = <Bytes as Value>::SelfType<'a>;
 
     fn type_name() -> redb::TypeName {
-        crepedb::Bytes::type_name()
+        crepedb_core::Bytes::type_name()
     }
 
     fn as_bytes<'a, 'b: 'a>(value: &'a Self::SelfType<'b>) -> Self::AsBytes<'a>

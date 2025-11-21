@@ -2,8 +2,15 @@ use alloc::{vec, vec::Vec};
 
 use crate::{Bytes, Error, Result};
 
+/// Represents a data operation in versioned tables.
+///
+/// Versioned tables store operations rather than just values, allowing
+/// them to distinguish between "value is set" and "value is deleted".
 pub enum DataOp {
+    /// Set a value for a key.
     Set(Vec<u8>),
+    
+    /// Delete a key.
     Del,
 }
 
@@ -17,6 +24,9 @@ impl From<DataOp> for Option<Bytes> {
 }
 
 impl DataOp {
+    /// Serialize the data operation to bytes.
+    ///
+    /// The operation type is encoded as a flag byte appended to the end.
     pub fn to_bytes(self) -> Vec<u8> {
         match self {
             Self::Set(mut v) => {
@@ -27,6 +37,13 @@ impl DataOp {
         }
     }
 
+    /// Deserialize a data operation from bytes.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if:
+    /// - The bytes are empty (missing flag)
+    /// - The flag byte is not a valid operation type
     pub fn from_bytes(bytes: Bytes) -> Result<DataOp> {
         let mut bytes = bytes;
 

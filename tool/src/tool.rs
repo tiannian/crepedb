@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use anyhow::Result;
 use clap::{Parser, Subcommand, ValueEnum};
-use crepedb::CrepeDB;
+use crepedb_core::CrepeDB;
 use crepedb_redb::RedbDatabase;
 use crepedb_tool::{Snapshot, Table};
 
@@ -33,7 +33,7 @@ pub enum SubCmd {
 }
 
 impl SubCmd {
-    pub fn exec<B>(self, db: CrepeDB<B>) -> Result<()> {
+    pub fn exec<B>(self, _db: CrepeDB<B>) -> Result<()> {
         match self {
             Self::Table(t) => t.exec()?,
             Self::Snapshot(s) => s.exec()?,
@@ -47,8 +47,6 @@ impl SubCmd {
 
 fn main() {
     let args = Args::parse();
-
-    println!("{:?}", args);
 
     match args.backend {
         Backend::Redb => {

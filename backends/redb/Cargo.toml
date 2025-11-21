@@ -8,7 +8,7 @@ repository.workspace = true
 readme.workspace = true
 
 [dependencies]
-crepedb = { workspace = true, features = ["tests"] }
+crepedb-core = { workspace = true, features = ["tests"] }
 
 log.workspace = true
 

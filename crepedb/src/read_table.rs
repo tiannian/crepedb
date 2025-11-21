@@ -6,6 +6,10 @@ use crate::{
     Bytes, DataOp, Error, Result, SnapshotId, TableType, Version,
 };
 
+/// A read-only view of a table at a specific snapshot.
+///
+/// Provides methods to query data from the table. For versioned tables,
+/// the view represents the state at the snapshot's version.
 pub struct ReadTable<T, E> {
     pub(crate) table: T,
 
@@ -25,6 +29,20 @@ where
     T: BackendReadTable<E>,
     E: BackendError,
 {
+    /// Get the value associated with a key.
+    ///
+    /// For versioned tables, this returns the value at this table's snapshot version.
+    /// For basic tables, this returns the current value.
+    ///
+    /// # Arguments
+    ///
+    /// * `key` - The key to look up
+    ///
+    /// # Returns
+    ///
+    /// * `Ok(Some(value))` if the key exists
+    /// * `Ok(None)` if the key does not exist or was deleted
+    /// * `Err(...)` if an error occurs
     pub fn get(&self, key: Bytes) -> Result<Option<Bytes>> {
         match self.table_type {
             TableType::Basic => self.get_basic(key),

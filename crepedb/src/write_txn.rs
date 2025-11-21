@@ -5,13 +5,24 @@ use crate::{
     utils, Error, Result, SnapshotId, TableType, Version, WriteTable,
 };
 
+/// A write transaction for modifying data and creating new snapshots.
+///
+/// Write transactions allow modifications to tables and create a new snapshot
+/// when committed. They maintain version history and parent-child relationships
+/// between snapshots.
 pub struct WriteTxn<T, E> {
     pub(crate) txn: T,
 
-    // None if write to root node
+    /// The parent snapshot ID. None if this is the root snapshot.
     pub(crate) parent_snapshot_id: Option<SnapshotId>,
+    
+    /// The snapshot ID being branched from.
     pub(crate) snapshot_id: SnapshotId,
+    
+    /// The new snapshot ID that will be created on commit.
     pub(crate) new_snapshot_id: SnapshotId,
+    
+    /// The version number for this transaction.
     pub(crate) version: Version,
 
     pub(crate) marker: PhantomData<E>,
@@ -37,6 +48,16 @@ where
     T: BackendWriteTxn<E>,
     E: BackendError,
 {
+    /// Create a new table with the specified type.
+    ///
+    /// # Arguments
+    ///
+    /// * `table` - The name of the table to create
+    /// * `ty` - The type of table (Basic or Versioned)
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the table already exists or cannot be created.
     pub fn create_table(&self, table: &str, ty: &TableType) -> Result<()> {
         let mut meta = utils::meta_writer(&self.txn)?;
 
@@ -45,6 +66,17 @@ where
         Ok(())
     }
 
+    /// Open a table for writing.
+    ///
+    /// Returns a writable view of the table in this transaction.
+    ///
+    /// # Arguments
+    ///
+    /// * `table` - The name of the table to open
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the table does not exist or cannot be opened.
     pub fn open_table(&self, table: &str) -> Result<WriteTable<T::Table<'_>, E>> {
         let meta = utils::meta_reader_by_write(&self.txn)?;
 
@@ -61,6 +93,18 @@ where
         Ok(table)
     }
 
+    /// Commit the write transaction.
+    ///
+    /// This persists all changes and creates a new snapshot. The snapshot ID
+    /// of the new snapshot is returned.
+    ///
+    /// # Returns
+    ///
+    /// The snapshot ID of the newly created snapshot.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the commit fails.
     pub fn commit(self) -> Result<SnapshotId> {
         {
             let mut snapshot = utils::snapshot_writer(&self.txn)?;

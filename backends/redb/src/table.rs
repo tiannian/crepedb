@@ -1,4 +1,4 @@
-use crepedb::{
+use crepedb_core::{
     backend::{ReadTable, WriteTable},
     Bytes,
 };
@@ -6,19 +6,25 @@ use redb::{Error, ReadOnlyTable, ReadableTable, Table, TableHandle};
 
 use crate::{types::BytesTy, RedbRange};
 
+/// A read-only table wrapper for redb.
+///
+/// Implements the CrepeDB `ReadTable` trait for redb's `ReadOnlyTable`.
 pub struct RedbReadTable {
     pub(crate) inner: ReadOnlyTable<BytesTy, BytesTy>,
     pub(crate) name: String,
 }
 
 impl ReadTable<Error> for RedbReadTable {
-    type Range<'c> = RedbRange<'c> where Self: 'c;
+    type Range<'c>
+        = RedbRange<'c>
+    where
+        Self: 'c;
 
     fn name(&self) -> &str {
         &self.name
     }
 
-    fn get(&self, key: Bytes) -> Result<Option<crepedb::Bytes>, Error> {
+    fn get(&self, key: Bytes) -> Result<Option<crepedb_core::Bytes>, Error> {
         if let Some(r) = self.inner.get(key)? {
             Ok(Some(r.value()))
         } else {
@@ -33,18 +39,24 @@ impl ReadTable<Error> for RedbReadTable {
     }
 }
 
+/// A writable table wrapper for redb.
+///
+/// Implements both the CrepeDB `ReadTable` and `WriteTable` traits for redb's `Table`.
 pub struct RedbWriteTable<'a> {
     pub(crate) inner: Table<'a, BytesTy, BytesTy>,
 }
 
 impl<'a> ReadTable<Error> for RedbWriteTable<'a> {
-    type Range<'c> = RedbRange<'c> where Self: 'c;
+    type Range<'c>
+        = RedbRange<'c>
+    where
+        Self: 'c;
 
     fn name(&self) -> &str {
         self.inner.name()
     }
 
-    fn get(&self, key: Bytes) -> Result<Option<crepedb::Bytes>, Error> {
+    fn get(&self, key: Bytes) -> Result<Option<crepedb_core::Bytes>, Error> {
         if let Some(r) = self.inner.get(key)? {
             Ok(Some(r.value()))
         } else {

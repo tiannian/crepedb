@@ -5,6 +5,10 @@ use crate::{
     Bytes, DataOp, Error, Result, SnapshotId, TableType, Version,
 };
 
+/// A writable view of a table within a write transaction.
+///
+/// Provides methods to modify data in the table. Changes are not persisted
+/// until the transaction is committed.
 pub struct WriteTable<T, E> {
     pub(crate) table: T,
 
@@ -21,9 +25,19 @@ where
     T: BackendWriteTable<E>,
     E: BackendError,
 {
-    /// Set Key-Value in table
+    /// Set a key-value pair in the table.
     ///
-    /// Table must be exist.
+    /// If the key already exists, its value is updated. For versioned tables,
+    /// this creates a new version entry.
+    ///
+    /// # Arguments
+    ///
+    /// * `key` - The key to set
+    /// * `value` - The value to associate with the key
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the operation fails.
     pub fn set(&mut self, key: Bytes, value: Bytes) -> Result<()> {
         match self.table_type {
             TableType::Basic => self.set_basic(key, value),
@@ -46,9 +60,18 @@ where
         Ok(())
     }
 
-    /// Set Value in table by Key
+    /// Delete a key from the table.
     ///
-    /// Table must be exist.
+    /// For versioned tables, this creates a deletion marker rather than
+    /// physically removing the data, preserving version history.
+    ///
+    /// # Arguments
+    ///
+    /// * `key` - The key to delete
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the operation fails.
     pub fn del(&mut self, key: Bytes) -> Result<()> {
         match self.table_type {
             TableType::Basic => self.del_basic(key),
