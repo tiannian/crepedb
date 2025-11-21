@@ -6,6 +6,17 @@ use crate::{
     utils, Error, ReadTxn, Result, WriteTxn,
 };
 
+/// Information about a database snapshot.
+///
+/// Contains the version number and the parent snapshot ID for a given snapshot.
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct SnapshotInfo {
+    /// The version number of the snapshot.
+    pub version: Version,
+    /// The parent snapshot ID (the previous snapshot in the lineage).
+    pub parent_snapshot_id: SnapshotId,
+}
+
 /// Versioned and forkable Database
 pub struct CrepeDB<B> {
     pub(crate) backend: B,
@@ -91,5 +102,32 @@ where
                 marker: PhantomData,
             })
         }
+    }
+
+    /// Get snapshot information by snapshot ID.
+    ///
+    /// Returns the version and parent snapshot ID for the given snapshot.
+    ///
+    /// # Arguments
+    ///
+    /// * `snapshot_id` - The snapshot ID to query
+    ///
+    /// # Returns
+    ///
+    /// A `SnapshotInfo` containing:
+    /// - `version`: The version number of the snapshot
+    /// - `parent_snapshot_id`: The parent snapshot ID (the previous snapshot)
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the snapshot ID doesn't exist or if there's a backend error.
+    pub fn get_snapshot_info(&self, snapshot_id: SnapshotId) -> Result<SnapshotInfo> {
+        let txn = self.backend.read_txn().map_err(Error::backend)?;
+        let snapshot = utils::snapshot_reader(&txn)?;
+        let (version, parent_snapshot_id) = snapshot.read(&snapshot_id)?;
+        Ok(SnapshotInfo {
+            version,
+            parent_snapshot_id,
+        })
     }
 }

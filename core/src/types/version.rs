@@ -7,7 +7,7 @@ use crate::{utils, Result};
 /// Versions are monotonically increasing numbers that track the lineage of snapshots.
 /// Each child snapshot has a version one greater than its parent.
 #[derive(Debug, PartialEq, Eq, Clone, PartialOrd, Ord)]
-pub struct Version(pub(crate) u64);
+pub struct Version(pub u64);
 
 impl From<[u8; 8]> for Version {
     fn from(value: [u8; 8]) -> Self {

@@ -32,7 +32,7 @@ impl SnapshotId {
     /// Get the special "preroot" snapshot ID.
     ///
     /// This ID is used when creating the root snapshot.
-    pub const fn preroot() -> Self {
+    pub(crate) const fn preroot() -> Self {
         Self(u64::MAX)
     }
 
