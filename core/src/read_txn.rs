@@ -64,11 +64,7 @@ where
 pub mod read_tests {
     use alloc::vec;
 
-    use crate::{
-        backend::Backend,
-        types::{SnapshotId, TableType},
-        CrepeDB, Result,
-    };
+    use crate::{backend::Backend, types::TableType, CrepeDB, Result};
 
     pub fn test_read(backend: impl Backend) -> Result<()> {
         // let db: CrepeDB<B> = CrepeDB::open("/tmp/__crepedb/test_read")?;
@@ -78,12 +74,12 @@ pub mod read_tests {
         let key = vec![2];
 
         // Create root
-        let rtxn = db.write(SnapshotId::preroot())?;
+        let rtxn = db.write(None)?;
         rtxn.create_table(table, &TableType::Versioned)?;
         let root = rtxn.commit()?;
 
         // Create s1 on root
-        let s1 = db.write(root.clone())?;
+        let s1 = db.write(Some(root.clone()))?;
         {
             let mut t = s1.open_table(table)?;
             t.set(key.clone(), vec![1])?;
@@ -92,14 +88,14 @@ pub mod read_tests {
 
         // Try to read on s1
         {
-            let rs1 = db.read(s1)?;
+            let rs1 = db.read(Some(s1))?;
             let t = rs1.open_table(table)?;
             let r = t.get(key.clone())?;
             assert_eq!(r, Some(vec![1]));
         }
 
         // Create s1 on root
-        let s1 = db.write(root)?;
+        let s1 = db.write(Some(root))?;
         {
             let mut t = s1.open_table(table)?;
             t.set(key.clone(), vec![2])?;
@@ -107,33 +103,33 @@ pub mod read_tests {
         let s2 = s1.commit()?;
 
         let s2 = {
-            let s = db.write(s2)?;
+            let s = db.write(Some(s2))?;
             s.commit()?
         };
 
         let s2 = {
-            let s = db.write(s2)?;
+            let s = db.write(Some(s2))?;
             s.commit()?
         };
 
         let s2 = {
-            let s = db.write(s2)?;
+            let s = db.write(Some(s2))?;
             s.commit()?
         };
 
         let s2 = {
-            let s = db.write(s2)?;
+            let s = db.write(Some(s2))?;
             s.commit()?
         };
 
         let s2 = {
-            let s = db.write(s2)?;
+            let s = db.write(Some(s2))?;
             s.commit()?
         };
 
         // Try to read on s2
         {
-            let rs1 = db.read(s2.clone())?;
+            let rs1 = db.read(Some(s2.clone()))?;
             let t = rs1.open_table(table)?;
             let r = t.get(key.clone())?;
             assert_eq!(r, Some(vec![2]));
@@ -141,7 +137,7 @@ pub mod read_tests {
 
         // Try to read on s2
         {
-            let rs1 = db.read(s2.clone())?;
+            let rs1 = db.read(Some(s2.clone()))?;
             let t = rs1.open_table(table)?;
             let r = t.get(vec![100])?;
             assert_eq!(r, None);
@@ -158,12 +154,12 @@ pub mod read_tests {
         let table = "test_isolation";
 
         // Create root
-        let rtxn = db.write(SnapshotId::preroot())?;
+        let rtxn = db.write(None)?;
         rtxn.create_table(table, &TableType::Versioned)?;
         let root = rtxn.commit()?;
 
         // Create branch 1 from root
-        let branch1_txn = db.write(root.clone())?;
+        let branch1_txn = db.write(Some(root.clone()))?;
         {
             let mut t = branch1_txn.open_table(table)?;
             t.set(vec![1], vec![10])?;
@@ -171,7 +167,7 @@ pub mod read_tests {
         let branch1 = branch1_txn.commit()?;
 
         // Create branch 2 from root with different data
-        let branch2_txn = db.write(root.clone())?;
+        let branch2_txn = db.write(Some(root.clone()))?;
         {
             let mut t = branch2_txn.open_table(table)?;
             t.set(vec![1], vec![20])?;
@@ -180,7 +176,7 @@ pub mod read_tests {
 
         // Read from branch 1 should see its own value
         {
-            let rtxn = db.read(branch1)?;
+            let rtxn = db.read(Some(branch1))?;
             let t = rtxn.open_table(table)?;
             let value = t.get(vec![1])?;
             assert_eq!(value, Some(vec![10]));
@@ -188,7 +184,7 @@ pub mod read_tests {
 
         // Read from branch 2 should see its own value
         {
-            let rtxn = db.read(branch2)?;
+            let rtxn = db.read(Some(branch2))?;
             let t = rtxn.open_table(table)?;
             let value = t.get(vec![1])?;
             assert_eq!(value, Some(vec![20]));
@@ -196,7 +192,7 @@ pub mod read_tests {
 
         // Read from root should see nothing
         {
-            let rtxn = db.read(root)?;
+            let rtxn = db.read(Some(root))?;
             let t = rtxn.open_table(table)?;
             let value = t.get(vec![1])?;
             assert_eq!(value, None);
@@ -211,12 +207,12 @@ pub mod read_tests {
         let table = "test_multi_keys";
 
         // Create root
-        let rtxn = db.write(SnapshotId::preroot())?;
+        let rtxn = db.write(None)?;
         rtxn.create_table(table, &TableType::Versioned)?;
         let root = rtxn.commit()?;
 
         // Write multiple keys
-        let wtxn = db.write(root.clone())?;
+        let wtxn = db.write(Some(root.clone()))?;
         {
             let mut t = wtxn.open_table(table)?;
             t.set(vec![1], vec![100])?;
@@ -228,7 +224,7 @@ pub mod read_tests {
 
         // Read all keys
         {
-            let rtxn = db.read(s1)?;
+            let rtxn = db.read(Some(s1))?;
             let t = rtxn.open_table(table)?;
             assert_eq!(t.get(vec![1])?, Some(vec![100]));
             assert_eq!(t.get(vec![2])?, Some(vec![200]));
@@ -238,7 +234,7 @@ pub mod read_tests {
         }
 
         // Create another branch from root with different data
-        let wtxn = db.write(root)?;
+        let wtxn = db.write(Some(root))?;
         {
             let mut t = wtxn.open_table(table)?;
             t.set(vec![1], vec![111])?;
@@ -248,7 +244,7 @@ pub mod read_tests {
 
         // Verify s2 has its own data
         {
-            let rtxn = db.read(s2)?;
+            let rtxn = db.read(Some(s2))?;
             let t = rtxn.open_table(table)?;
             assert_eq!(t.get(vec![1])?, Some(vec![111]));
             assert_eq!(t.get(vec![2])?, Some(vec![222]));
@@ -265,12 +261,12 @@ pub mod read_tests {
         let db = CrepeDB::new(backend);
 
         // Create root
-        let rtxn = db.write(SnapshotId::preroot())?;
+        let rtxn = db.write(None)?;
         rtxn.create_table("existing_table", &TableType::Versioned)?;
         let root = rtxn.commit()?;
 
         // Try to open non-existent table
-        let rtxn = db.read(root)?;
+        let rtxn = db.read(Some(root))?;
         let result = rtxn.open_table("non_existent_table");
         assert!(result.is_err());
 
@@ -282,14 +278,14 @@ pub mod read_tests {
         let db = CrepeDB::new(backend);
 
         // Create root with multiple tables
-        let rtxn = db.write(SnapshotId::preroot())?;
+        let rtxn = db.write(None)?;
         rtxn.create_table("table1", &TableType::Versioned)?;
         rtxn.create_table("table2", &TableType::Versioned)?;
         rtxn.create_table("table3", &TableType::Versioned)?;
         let root = rtxn.commit()?;
 
         // Write to different tables
-        let wtxn = db.write(root)?;
+        let wtxn = db.write(Some(root))?;
         {
             let mut t1 = wtxn.open_table("table1")?;
             t1.set(vec![1], vec![100])?;
@@ -304,7 +300,7 @@ pub mod read_tests {
 
         // Read from all tables and verify isolation
         {
-            let rtxn = db.read(s1)?;
+            let rtxn = db.read(Some(s1))?;
 
             let t1 = rtxn.open_table("table1")?;
             assert_eq!(t1.get(vec![1])?, Some(vec![100]));
@@ -324,12 +320,12 @@ pub mod read_tests {
         let db = CrepeDB::new(backend);
 
         // Create root with Basic table
-        let rtxn = db.write(SnapshotId::preroot())?;
+        let rtxn = db.write(None)?;
         rtxn.create_table("basic_table", &TableType::Basic)?;
         let root = rtxn.commit()?;
 
         // Write to basic table
-        let wtxn = db.write(root.clone())?;
+        let wtxn = db.write(Some(root.clone()))?;
         {
             let mut t = wtxn.open_table("basic_table")?;
             t.set(vec![1], vec![100])?;
@@ -338,13 +334,13 @@ pub mod read_tests {
 
         // Read from basic table
         {
-            let rtxn = db.read(s1)?;
+            let rtxn = db.read(Some(s1))?;
             let t = rtxn.open_table("basic_table")?;
             assert_eq!(t.get(vec![1])?, Some(vec![100]));
         }
 
         // Basic table should show updates from any branch
-        let wtxn = db.write(root)?;
+        let wtxn = db.write(Some(root))?;
         {
             let mut t = wtxn.open_table("basic_table")?;
             t.set(vec![1], vec![200])?;
@@ -352,7 +348,7 @@ pub mod read_tests {
         let s2 = wtxn.commit()?;
 
         {
-            let rtxn = db.read(s2)?;
+            let rtxn = db.read(Some(s2))?;
             let t = rtxn.open_table("basic_table")?;
             assert_eq!(t.get(vec![1])?, Some(vec![200]));
         }
@@ -366,12 +362,12 @@ pub mod read_tests {
         let table = "test_edges";
 
         // Create root
-        let rtxn = db.write(SnapshotId::preroot())?;
+        let rtxn = db.write(None)?;
         rtxn.create_table(table, &TableType::Versioned)?;
         let root = rtxn.commit()?;
 
         // Test empty value
-        let wtxn = db.write(root)?;
+        let wtxn = db.write(Some(root))?;
         {
             let mut t = wtxn.open_table(table)?;
             t.set(vec![1], vec![])?;
@@ -379,13 +375,13 @@ pub mod read_tests {
         let s1 = wtxn.commit()?;
 
         {
-            let rtxn = db.read(s1.clone())?;
+            let rtxn = db.read(Some(s1.clone()))?;
             let t = rtxn.open_table(table)?;
             assert_eq!(t.get(vec![1])?, Some(vec![]));
         }
 
         // Test large key and value
-        let wtxn = db.write(s1)?;
+        let wtxn = db.write(Some(s1))?;
         {
             let mut t = wtxn.open_table(table)?;
             let large_key = vec![255u8; 1024];
@@ -395,7 +391,7 @@ pub mod read_tests {
         let s2 = wtxn.commit()?;
 
         {
-            let rtxn = db.read(s2)?;
+            let rtxn = db.read(Some(s2))?;
             let t = rtxn.open_table(table)?;
             let large_key = vec![255u8; 1024];
             let large_value = vec![128u8; 4096];
@@ -411,7 +407,7 @@ pub mod read_tests {
         let table = "test_chain";
 
         // Create root
-        let rtxn = db.write(SnapshotId::preroot())?;
+        let rtxn = db.write(None)?;
         rtxn.create_table(table, &TableType::Versioned)?;
         let root = rtxn.commit()?;
 
@@ -420,7 +416,7 @@ pub mod read_tests {
         let chain_length = 20u8;
 
         for i in 0u8..chain_length {
-            let wtxn = db.write(current)?;
+            let wtxn = db.write(Some(current))?;
             {
                 let mut t = wtxn.open_table(table)?;
                 // Each snapshot writes its own key
@@ -431,7 +427,7 @@ pub mod read_tests {
 
         // Read from the final snapshot - should see all keys
         {
-            let rtxn = db.read(current)?;
+            let rtxn = db.read(Some(current))?;
             let t = rtxn.open_table(table)?;
             for i in 0u8..chain_length {
                 let value = t.get(vec![i])?;
@@ -448,12 +444,12 @@ pub mod read_tests {
         let table = "test_delete";
 
         // Create root
-        let rtxn = db.write(SnapshotId::preroot())?;
+        let rtxn = db.write(None)?;
         rtxn.create_table(table, &TableType::Versioned)?;
         let root = rtxn.commit()?;
 
         // Branch 1: Write a key
-        let wtxn = db.write(root.clone())?;
+        let wtxn = db.write(Some(root.clone()))?;
         {
             let mut t = wtxn.open_table(table)?;
             t.set(vec![1], vec![100])?;
@@ -463,14 +459,14 @@ pub mod read_tests {
 
         // Verify keys exist in s1
         {
-            let rtxn = db.read(s1.clone())?;
+            let rtxn = db.read(Some(s1.clone()))?;
             let t = rtxn.open_table(table)?;
             assert_eq!(t.get(vec![1])?, Some(vec![100]));
             assert_eq!(t.get(vec![2])?, Some(vec![200]));
         }
 
         // Branch 2: From root, create a branch where key 1 doesn't exist
-        let wtxn = db.write(root)?;
+        let wtxn = db.write(Some(root))?;
         {
             let mut t = wtxn.open_table(table)?;
             // Only set key 2, key 1 doesn't exist
@@ -480,7 +476,7 @@ pub mod read_tests {
 
         // Verify key 1 doesn't exist in s2, but key 2 does
         {
-            let rtxn = db.read(s2)?;
+            let rtxn = db.read(Some(s2))?;
             let t = rtxn.open_table(table)?;
             assert_eq!(t.get(vec![1])?, None);
             assert_eq!(t.get(vec![2])?, Some(vec![222]));
@@ -488,7 +484,7 @@ pub mod read_tests {
 
         // Verify s1 still has both keys (snapshot isolation)
         {
-            let rtxn = db.read(s1)?;
+            let rtxn = db.read(Some(s1))?;
             let t = rtxn.open_table(table)?;
             assert_eq!(t.get(vec![1])?, Some(vec![100]));
             assert_eq!(t.get(vec![2])?, Some(vec![200]));
@@ -503,12 +499,12 @@ pub mod read_tests {
         let table = "test_root";
 
         // Create root
-        let rtxn = db.write(SnapshotId::preroot())?;
+        let rtxn = db.write(None)?;
         rtxn.create_table(table, &TableType::Versioned)?;
         let root = rtxn.commit()?;
 
         // Create first snapshot with no data (just to establish snapshot chain)
-        let wtxn = db.write(root)?;
+        let wtxn = db.write(Some(root))?;
         {
             // Open table but don't write anything
             let _t = wtxn.open_table(table)?;
@@ -517,13 +513,13 @@ pub mod read_tests {
 
         // Verify s0 is readable and empty
         {
-            let rtxn = db.read(s0.clone())?;
+            let rtxn = db.read(Some(s0.clone()))?;
             let t = rtxn.open_table(table)?;
             assert_eq!(t.get(vec![1])?, None);
         }
 
         // Create child snapshot with data
-        let wtxn = db.write(s0.clone())?;
+        let wtxn = db.write(Some(s0.clone()))?;
         {
             let mut t = wtxn.open_table(table)?;
             t.set(vec![1], vec![100])?;
@@ -532,14 +528,14 @@ pub mod read_tests {
 
         // Read from child
         {
-            let rtxn = db.read(s1)?;
+            let rtxn = db.read(Some(s1))?;
             let t = rtxn.open_table(table)?;
             assert_eq!(t.get(vec![1])?, Some(vec![100]));
         }
 
         // s0 should still be empty (parent doesn't see child's changes)
         {
-            let rtxn = db.read(s0)?;
+            let rtxn = db.read(Some(s0))?;
             let t = rtxn.open_table(table)?;
             assert_eq!(t.get(vec![1])?, None);
         }
@@ -553,12 +549,12 @@ pub mod read_tests {
         let table = "test_lifecycle";
 
         // Create root
-        let rtxn = db.write(SnapshotId::preroot())?;
+        let rtxn = db.write(None)?;
         rtxn.create_table(table, &TableType::Versioned)?;
         let root = rtxn.commit()?;
 
         // Write data
-        let wtxn = db.write(root)?;
+        let wtxn = db.write(Some(root))?;
         {
             let mut t = wtxn.open_table(table)?;
             t.set(vec![1], vec![100])?;
@@ -567,7 +563,7 @@ pub mod read_tests {
 
         // Open the same table multiple times in one read transaction
         {
-            let rtxn = db.read(s1)?;
+            let rtxn = db.read(Some(s1))?;
 
             let t1 = rtxn.open_table(table)?;
             assert_eq!(t1.get(vec![1])?, Some(vec![100]));
@@ -588,12 +584,12 @@ pub mod read_tests {
         let table = "test_mixed";
 
         // Create root
-        let rtxn = db.write(SnapshotId::preroot())?;
+        let rtxn = db.write(None)?;
         rtxn.create_table(table, &TableType::Versioned)?;
         let root = rtxn.commit()?;
 
         // Write some keys
-        let wtxn = db.write(root)?;
+        let wtxn = db.write(Some(root))?;
         {
             let mut t = wtxn.open_table(table)?;
             for i in 0..10 {
@@ -606,7 +602,7 @@ pub mod read_tests {
 
         // Read mixed existing and non-existing keys
         {
-            let rtxn = db.read(s1)?;
+            let rtxn = db.read(Some(s1))?;
             let t = rtxn.open_table(table)?;
 
             for i in 0..10 {
@@ -628,12 +624,12 @@ pub mod read_tests {
         let table = "test_visibility";
 
         // Create root
-        let rtxn = db.write(SnapshotId::preroot())?;
+        let rtxn = db.write(None)?;
         rtxn.create_table(table, &TableType::Versioned)?;
         let root = rtxn.commit()?;
 
         // Parent snapshot with some data
-        let wtxn = db.write(root)?;
+        let wtxn = db.write(Some(root))?;
         {
             let mut t = wtxn.open_table(table)?;
             t.set(vec![1], vec![100])?;
@@ -642,7 +638,7 @@ pub mod read_tests {
         let parent = wtxn.commit()?;
 
         // Child snapshot adds more data
-        let wtxn = db.write(parent.clone())?;
+        let wtxn = db.write(Some(parent.clone()))?;
         {
             let mut t = wtxn.open_table(table)?;
             t.set(vec![3], vec![250])?;
@@ -651,7 +647,7 @@ pub mod read_tests {
 
         // Child should see parent's data + its own
         {
-            let rtxn = db.read(child)?;
+            let rtxn = db.read(Some(child))?;
             let t = rtxn.open_table(table)?;
             assert_eq!(t.get(vec![1])?, Some(vec![100]));
             assert_eq!(t.get(vec![2])?, Some(vec![200]));
@@ -660,7 +656,7 @@ pub mod read_tests {
 
         // Parent should not see child's data
         {
-            let rtxn = db.read(parent)?;
+            let rtxn = db.read(Some(parent))?;
             let t = rtxn.open_table(table)?;
             assert_eq!(t.get(vec![1])?, Some(vec![100]));
             assert_eq!(t.get(vec![2])?, Some(vec![200]));
@@ -676,12 +672,12 @@ pub mod read_tests {
         let table = "test_branching";
 
         // Create root
-        let rtxn = db.write(SnapshotId::preroot())?;
+        let rtxn = db.write(None)?;
         rtxn.create_table(table, &TableType::Versioned)?;
         let root = rtxn.commit()?;
 
         // Base snapshot
-        let wtxn = db.write(root.clone())?;
+        let wtxn = db.write(Some(root.clone()))?;
         {
             let mut t = wtxn.open_table(table)?;
             t.set(vec![0], vec![0])?;
@@ -691,7 +687,7 @@ pub mod read_tests {
         // Create 3 branches from base
         let mut branches = alloc::vec::Vec::new();
         for i in 1u8..=3u8 {
-            let wtxn = db.write(base.clone())?;
+            let wtxn = db.write(Some(base.clone()))?;
             {
                 let mut t = wtxn.open_table(table)?;
                 t.set(vec![i], vec![i * 10])?;
@@ -701,7 +697,7 @@ pub mod read_tests {
 
         // Each branch should see base data + its own
         for (branch, i) in branches {
-            let rtxn = db.read(branch)?;
+            let rtxn = db.read(Some(branch))?;
             let t = rtxn.open_table(table)?;
 
             // Should see base data

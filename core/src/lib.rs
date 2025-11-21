@@ -21,18 +21,18 @@
 //! let db = CrepeDB::new(backend);
 //!
 //! // Create root snapshot
-//! let wtxn = db.write(SnapshotId::preroot())?;
+//! let wtxn = db.write(None)?;
 //! wtxn.create_table("my_table", &TableType::Versioned)?;
 //! let root = wtxn.commit()?;
 //!
 //! // Write data
-//! let wtxn = db.write(root)?;
+//! let wtxn = db.write(Some(root))?;
 //! let mut table = wtxn.open_table("my_table")?;
 //! table.set(b"key".to_vec(), b"value".to_vec())?;
 //! let snapshot1 = wtxn.commit()?;
 //!
 //! // Read data
-//! let rtxn = db.read(snapshot1)?;
+//! let rtxn = db.read(Some(snapshot1))?;
 //! let table = rtxn.open_table("my_table")?;
 //! let value = table.get(b"key".to_vec())?;
 //! ```
@@ -174,9 +174,7 @@ pub mod tests {
     pub fn test_db_10(backend: impl Backend) -> Result<()> {
         let db = CrepeDB::new(backend);
 
-        let sid = SnapshotId::preroot();
-
-        let write_txn = db.write(sid)?;
+        let write_txn = db.write(None)?;
         log::info!("{:?}", write_txn);
 
         write_txn.commit()?;
@@ -184,7 +182,7 @@ pub mod tests {
         let mut sid = SnapshotId::root();
 
         for _ in 1..12 {
-            let write_txn = db.write(sid)?;
+            let write_txn = db.write(Some(sid))?;
             log::info!("{:?}", write_txn);
 
             let nsid = write_txn.commit()?;
@@ -192,7 +190,7 @@ pub mod tests {
             sid = nsid;
         }
 
-        let txn = db.read(sid)?;
+        let txn = db.read(Some(sid))?;
 
         check_index_10(txn)?;
 

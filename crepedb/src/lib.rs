@@ -23,18 +23,18 @@
 //! let db = CrepeDB::new(backend);
 //!
 //! // Create root snapshot
-//! let wtxn = db.write(SnapshotId::preroot())?;
+//! let wtxn = db.write(None)?;
 //! wtxn.create_table("my_table", &TableType::Versioned)?;
 //! let root = wtxn.commit()?;
 //!
 //! // Write data
-//! let wtxn = db.write(root)?;
+//! let wtxn = db.write(Some(root))?;
 //! let mut table = wtxn.open_table("my_table")?;
 //! table.set(b"key".to_vec(), b"value".to_vec())?;
 //! let snapshot1 = wtxn.commit()?;
 //!
 //! // Read data
-//! let rtxn = db.read(snapshot1)?;
+//! let rtxn = db.read(Some(snapshot1))?;
 //! let table = rtxn.open_table("my_table")?;
 //! let value = table.get(b"key".to_vec())?;
 //! ```

@@ -31,8 +31,13 @@ where
     }
 
     /// Create a transaction to read data.
-    pub fn read(&self, snapshot_id: SnapshotId) -> Result<ReadTxn<B::ReadTxn<'_>, B::Error>> {
+    pub fn read(
+        &self,
+        snapshot_id: Option<SnapshotId>,
+    ) -> Result<ReadTxn<B::ReadTxn<'_>, B::Error>> {
         let txn = self.backend.read_txn().map_err(Error::backend)?;
+
+        let snapshot_id = snapshot_id.unwrap_or(SnapshotId::preroot());
 
         Ok(ReadTxn {
             txn,
@@ -42,28 +47,13 @@ where
     }
 
     /// Create a transaction to write data.
-    pub fn write(&self, snapshot_id: SnapshotId) -> Result<WriteTxn<B::WriteTxn<'_>, B::Error>> {
+    pub fn write(
+        &self,
+        snapshot_id: Option<SnapshotId>,
+    ) -> Result<WriteTxn<B::WriteTxn<'_>, B::Error>> {
         let txn = self.backend.write_txn().map_err(Error::backend)?;
 
-        if snapshot_id == SnapshotId::preroot() {
-            // Create root.
-            let snapshot = utils::snapshot_writer(&txn)?;
-
-            if snapshot.has(&snapshot_id)? {
-                return Err(Error::OnlySupportOneRoot);
-            }
-
-            drop(snapshot);
-
-            Ok(WriteTxn {
-                txn,
-                version: Version::root(),
-                new_snapshot_id: SnapshotId::root(),
-                parent_snapshot_id: None,
-                snapshot_id,
-                marker: PhantomData,
-            })
-        } else {
+        if let Some(snapshot_id) = snapshot_id {
             let snapshot = utils::snapshot_writer(&txn)?;
 
             let (version, parent_snapshot_id) = snapshot.read(&snapshot_id)?;
@@ -77,6 +67,26 @@ where
                 version: (version.0 + 1).into(),
                 new_snapshot_id,
                 parent_snapshot_id: Some(parent_snapshot_id),
+                snapshot_id,
+                marker: PhantomData,
+            })
+        } else {
+            // Create root.
+            let snapshot = utils::snapshot_writer(&txn)?;
+
+            let snapshot_id = SnapshotId::preroot();
+
+            if snapshot.has(&snapshot_id)? {
+                return Err(Error::OnlySupportOneRoot);
+            }
+
+            drop(snapshot);
+
+            Ok(WriteTxn {
+                txn,
+                version: Version::root(),
+                new_snapshot_id: SnapshotId::root(),
+                parent_snapshot_id: None,
                 snapshot_id,
                 marker: PhantomData,
             })
