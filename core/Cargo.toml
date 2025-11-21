@@ -1,5 +1,5 @@
 [package]
-name = "crepedb"
+name = "crepedb-core"
 version.workspace = true
 edition.workspace = true
 description.workspace = true
@@ -8,7 +8,12 @@ repository.workspace = true
 readme.workspace = true
 
 [dependencies]
-crepedb-core = { workspace = true }
-crepedb-redb = { workspace = true }
-crepedb-rocksdb = { workspace = true }
-crepedb-mdbx = { workspace = true }
+hex.workspace = true
+
+seq-macro.workspace = true
+
+log.workspace = true
+
+[features]
+default = []
+tests = []

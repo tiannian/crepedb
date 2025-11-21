@@ -2,8 +2,9 @@ use core::marker::PhantomData;
 
 use crate::{
     backend::{BackendError, Range, ReadTable as BackendReadTable},
+    types::{Bytes, DataOp, SnapshotId, TableType, Version},
     utils::{IndexTable, SnapshotTable},
-    Bytes, DataOp, Error, Result, SnapshotId, TableType, Version,
+    Error, Result,
 };
 
 /// A read-only view of a table at a specific snapshot.

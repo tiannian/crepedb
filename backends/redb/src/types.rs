@@ -3,7 +3,7 @@
 //! This module provides types that bridge CrepeDB's byte arrays with redb's
 //! type system.
 
-use crepedb_core::Bytes;
+use crepedb_core::types::Bytes;
 use redb::{Key, Value};
 
 /// A type adapter for using CrepeDB's `Bytes` type with redb.
@@ -19,7 +19,7 @@ impl Value for BytesTy {
     type SelfType<'a> = <Bytes as Value>::SelfType<'a>;
 
     fn type_name() -> redb::TypeName {
-        crepedb_core::Bytes::type_name()
+        crepedb_core::types::Bytes::type_name()
     }
 
     fn as_bytes<'a, 'b: 'a>(value: &'a Self::SelfType<'b>) -> Self::AsBytes<'a>

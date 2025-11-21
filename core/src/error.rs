@@ -2,7 +2,7 @@
 
 use alloc::boxed::Box;
 
-use crate::{backend::BackendError, SnapshotId};
+use crate::{backend::BackendError, types::SnapshotId};
 
 /// Errors that can occur during CrepeDB operations.
 #[derive(Debug)]

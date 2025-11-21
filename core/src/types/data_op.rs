@@ -1,6 +1,6 @@
 use alloc::{vec, vec::Vec};
 
-use crate::{Bytes, Error, Result};
+use crate::{types::Bytes, Error, Result};
 
 /// Represents a data operation in versioned tables.
 ///
@@ -9,7 +9,7 @@ use crate::{Bytes, Error, Result};
 pub enum DataOp {
     /// Set a value for a key.
     Set(Vec<u8>),
-    
+
     /// Delete a key.
     Del,
 }

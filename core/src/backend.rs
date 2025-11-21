@@ -6,7 +6,7 @@
 
 use core::fmt::{Debug, Display};
 
-use crate::Bytes;
+use crate::types::Bytes;
 
 /// Main trait for storage backends.
 ///

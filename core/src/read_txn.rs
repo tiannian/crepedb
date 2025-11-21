@@ -2,7 +2,8 @@ use core::marker::PhantomData;
 
 use crate::{
     backend::{BackendError, ReadTxn as BackendReadTxn},
-    utils, Error, ReadTable, Result, SnapshotId,
+    types::SnapshotId,
+    utils, Error, ReadTable, Result,
 };
 
 /// A read transaction for querying data at a specific snapshot.
@@ -63,7 +64,11 @@ where
 pub mod read_tests {
     use alloc::vec;
 
-    use crate::{backend::Backend, CrepeDB, Result, SnapshotId, TableType};
+    use crate::{
+        backend::Backend,
+        types::{SnapshotId, TableType},
+        CrepeDB, Result,
+    };
 
     pub fn test_read(backend: impl Backend) -> Result<()> {
         // let db: CrepeDB<B> = CrepeDB::open("/tmp/__crepedb/test_read")?;

@@ -1,6 +1,6 @@
 use crepedb_core::{
     backend::{ReadTable, WriteTable},
-    Bytes,
+    types::Bytes,
 };
 use redb::{Error, ReadOnlyTable, ReadableTable, Table, TableHandle};
 
@@ -24,7 +24,7 @@ impl ReadTable<Error> for RedbReadTable {
         &self.name
     }
 
-    fn get(&self, key: Bytes) -> Result<Option<crepedb_core::Bytes>, Error> {
+    fn get(&self, key: Bytes) -> Result<Option<crepedb_core::types::Bytes>, Error> {
         if let Some(r) = self.inner.get(key)? {
             Ok(Some(r.value()))
         } else {
@@ -56,7 +56,7 @@ impl<'a> ReadTable<Error> for RedbWriteTable<'a> {
         self.inner.name()
     }
 
-    fn get(&self, key: Bytes) -> Result<Option<crepedb_core::Bytes>, Error> {
+    fn get(&self, key: Bytes) -> Result<Option<crepedb_core::types::Bytes>, Error> {
         if let Some(r) = self.inner.get(key)? {
             Ok(Some(r.value()))
         } else {

@@ -1,6 +1,6 @@
 use crepedb_core::{
     backend::{ReadTable, WriteTable},
-    Bytes,
+    types::Bytes,
 };
 use libmdbx::{Error, NoWriteMap, Table, Transaction, RO, RW};
 

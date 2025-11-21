@@ -1,6 +1,10 @@
 use core::marker::PhantomData;
 
-use crate::{backend::Backend, utils, Error, ReadTxn, Result, SnapshotId, Version, WriteTxn};
+use crate::{
+    backend::Backend,
+    types::{SnapshotId, Version},
+    utils, Error, ReadTxn, Result, WriteTxn,
+};
 
 /// Versioned and forkable Database
 pub struct CrepeDB<B> {

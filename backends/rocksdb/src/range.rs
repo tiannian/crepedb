@@ -14,7 +14,9 @@ pub struct RocksdbRange {
 }
 
 impl crepedb_core::backend::Range<Error> for RocksdbRange {
-    fn back(&mut self) -> Result<Option<(crepedb_core::Bytes, crepedb_core::Bytes)>, Error> {
+    fn back(
+        &mut self,
+    ) -> Result<Option<(crepedb_core::types::Bytes, crepedb_core::types::Bytes)>, Error> {
         // Initialize iterator on first call
         if self.current.is_none() {
             self.current = Some(0);

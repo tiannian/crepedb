@@ -2,7 +2,8 @@ use core::{fmt::Debug, marker::PhantomData};
 
 use crate::{
     backend::{BackendError, WriteTxn as BackendWriteTxn},
-    utils, Error, Result, SnapshotId, TableType, Version, WriteTable,
+    types::{SnapshotId, TableType, Version},
+    utils, Error, Result, WriteTable,
 };
 
 /// A write transaction for modifying data and creating new snapshots.

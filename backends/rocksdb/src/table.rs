@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use crepedb_core::{
     backend::{ReadTable, WriteTable},
-    Bytes,
+    types::Bytes,
 };
 use rocksdb::{Error, OptimisticTransactionDB, Transaction};
 
@@ -48,7 +48,7 @@ impl ReadTable<Error> for RocksdbReadTable {
     fn range(&self, begin: Bytes, end: Bytes) -> Result<Self::Range<'_>, Error> {
         let begin_key = self.make_key(&begin);
         let end_key = self.make_key(&end);
-        
+
         Ok(RocksdbRange {
             db: Arc::clone(&self.db),
             begin: begin_key,
@@ -100,7 +100,7 @@ impl<'a> ReadTable<Error> for RocksdbWriteTable<'a> {
     fn range(&self, begin: Bytes, end: Bytes) -> Result<Self::Range<'_>, Error> {
         let begin_key = self.make_key(&begin);
         let end_key = self.make_key(&end);
-        
+
         Ok(RocksdbRange {
             db: Arc::clone(&self.db),
             begin: begin_key,
@@ -124,4 +124,3 @@ impl<'a> WriteTable<Error> for RocksdbWriteTable<'a> {
         Ok(())
     }
 }
-

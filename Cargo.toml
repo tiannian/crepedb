@@ -1,11 +1,11 @@
 [workspace]
 resolver = "2"
 members = [
-  "crepedb",
+  "core",
   "backends/redb",
   "backends/rocksdb",
   "backends/mdbx",
-  "tool",
+  "tool", "crepedb",
   # "backends/sled",
 ]
 
@@ -24,7 +24,7 @@ hex = { version = "0.4.3", default-features = false, features = ["alloc"] }
 # utils
 seq-macro = "0.3.5"
 
-crepedb-core = { path = "crepedb", version = "0.1" }
+crepedb-core = { path = "core", version = "0.1" }
 crepedb-redb = { path = "backends/redb", version = "0.1" }
 crepedb-rocksdb = { path = "backends/rocksdb", version = "0.1" }
 crepedb-mdbx = { path = "backends/mdbx", version = "0.1" }

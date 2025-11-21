@@ -10,14 +10,16 @@
 //! - **Versioned Storage**: Track changes across multiple versions
 //! - **Snapshot Isolation**: Create and read from consistent snapshots
 //! - **Fork Support**: Create new branches from any snapshot
-//! - **Backend Abstraction**: Use different storage backends (e.g., redb)
+//! - **Backend Abstraction**: Use different storage backends (e.g., redb, rocksdb, mdbx)
 //!
 //! ## Example
 //!
 //! ```ignore
 //! use crepedb::{CrepeDB, SnapshotId, TableType};
+//! use crepedb::backend::RedbDatabase;
 //!
 //! // Create a database with a backend
+//! let backend = RedbDatabase::memory()?;
 //! let db = CrepeDB::new(backend);
 //!
 //! // Create root snapshot
@@ -37,165 +39,54 @@
 //! let value = table.get(b"key".to_vec())?;
 //! ```
 
-#![no_std]
+// Re-export all core types and modules
+pub use crepedb_core::*;
 
-extern crate alloc;
+/// Core types used throughout CrepeDB.
+///
+/// This module re-exports essential types from the core library, including:
+/// - [`SnapshotId`]: Unique identifier for database snapshots
+/// - [`Bytes`]: Byte array type used for keys and values
+/// - [`Version`]: Version number type for tracking changes
+pub mod types {
+    pub use crepedb_core::types::*;
+}
 
-#[cfg(feature = "tests")]
-extern crate std;
+/// Storage backend implementations.
+///
+/// This module provides access to different storage backend implementations
+/// that can be used with CrepeDB. Each backend implements the [`Backend`] trait
+/// and provides its own database type.
+///
+/// ## Available Backends
+///
+/// - **RedbDatabase**: A simple, portable, high-performance embedded key-value database
+/// - **RocksdbDatabase**: A high-performance embedded database based on RocksDB
+/// - **MdbxDatabase**: A fast, compact, powerful embedded transactional key-value database
+///
+/// ## Example
+///
+/// ```ignore
+/// use crepedb::backend::RedbDatabase;
+/// use crepedb::CrepeDB;
+///
+/// // Create a backend
+/// let backend = RedbDatabase::memory()?;
+/// let db = CrepeDB::new(backend);
+/// ```
+pub mod backend {
+    /// Redb backend implementation.
+    ///
+    /// Redb is a simple, portable, high-performance, ACID, embedded key-value database.
+    pub use crepedb_redb::RedbDatabase;
 
-pub mod backend;
+    /// RocksDB backend implementation.
+    ///
+    /// RocksDB is a high-performance embedded database for key-value data.
+    pub use crepedb_rocksdb::RocksdbDatabase;
 
-mod types;
-pub use types::*;
-
-mod db;
-pub use db::*;
-
-mod read_txn;
-pub use read_txn::*;
-
-mod read_table;
-pub use read_table::*;
-
-mod write_txn;
-pub use write_txn::*;
-
-mod write_table;
-pub use write_table::*;
-
-mod error;
-pub use error::*;
-
-pub(crate) mod utils;
-
-#[doc(hidden)]
-#[cfg(feature = "tests")]
-pub mod tests {
-    use crate::{
-        backend::{Backend, BackendError, ReadTxn as BackendReadTxn},
-        utils::snapshot_reader,
-        CrepeDB, ReadTxn, Result, SnapshotId,
-    };
-
-    use super::utils::index_reader;
-
-    pub fn check_index_10<T, E>(txn: ReadTxn<T, E>) -> Result<()>
-    where
-        T: BackendReadTxn<E>,
-        E: BackendError,
-    {
-        let idx = index_reader(&txn.txn)?;
-        let snp = snapshot_reader(&txn.txn)?;
-
-        let snapshot = txn.snapshot_id.clone();
-
-        macro_rules! check_inner {
-            (
-                $p:expr,
-                $bi:literal,
-                $ei:literal => None,
-                $( $i:literal => $v:literal),*
-            ) => {
-                {
-                    let (v, n) = snp.read(&$p)?;
-                    assert_eq!(v, $bi.into());
-                    $(
-
-                        {
-                            let s = idx.read(&$p, $i)?.unwrap();
-                            let (v, _) = snp.read(&s)?;
-                            assert_eq!(v, $v.into());
-                        }
-                    )*
-
-                    let sp = idx.read(&$p, $ei)?;
-                    assert_eq!(sp, None);
-                    n
-                }
-            };
-
-            (
-                $p:expr,
-                $bi:literal,
-                $ei:literal => $ev:literal,
-                $( $i:literal => $v:literal),*
-            ) => {
-                {
-                    let (v, n) = snp.read(&$p)?;
-                    assert_eq!(v, $bi.into());
-
-                    $(
-
-                        {
-                            let s = idx.read(&$p, $i)?.unwrap();
-                            let (v, _) = snp.read(&s)?;
-                            assert_eq!(v, $v.into());
-                        }
-                    )*
-
-                    let s = idx.read(&$p, $ei)?.unwrap();
-                    let (v, _) = snp.read(&s)?;
-                    assert_eq!(v, $ev.into());
-                    n
-                }
-            };
-
-            (
-                $p:expr,
-                $bi:literal
-            ) => {
-                {
-                    let (v, n) = snp.read(&$p)?;
-                    assert_eq!(v, $bi.into());
-
-                    n
-                }
-            }
-
-        }
-
-        let ppp = check_inner!(snapshot, 11, 4 => None, 1 => 9, 2 => 7, 3 => 3);
-        let ppp = check_inner!(ppp,      10, 4 => None, 1 => 8, 2 => 6, 3 => 2);
-        let ppp = check_inner!(ppp,      9,  4 => None, 1 => 7, 2 => 5, 3 => 1);
-        let ppp = check_inner!(ppp,      8,  3 => 0,    1 => 6, 2 => 4);
-        let ppp = check_inner!(ppp,      7,  3 => None, 1 => 5, 2 => 3);
-        let ppp = check_inner!(ppp,      6,  3 => None, 1 => 4, 2 => 2);
-        let ppp = check_inner!(ppp,      5,  3 => None, 1 => 3, 2 => 1);
-        let ppp = check_inner!(ppp,      4,  2 => 0,    1 => 2);
-        let ppp = check_inner!(ppp,      3,  2 => None, 1 => 1);
-        let ppp = check_inner!(ppp,      2,  1 => 0,);
-        let ppp = check_inner!(ppp, 1);
-        check_inner!(ppp, 0);
-
-        Ok(())
-    }
-
-    pub fn test_db_10(backend: impl Backend) -> Result<()> {
-        let db = CrepeDB::new(backend);
-
-        let sid = SnapshotId::preroot();
-
-        let write_txn = db.write(sid)?;
-        log::info!("{:?}", write_txn);
-
-        write_txn.commit()?;
-
-        let mut sid = SnapshotId::root();
-
-        for _ in 1..12 {
-            let write_txn = db.write(sid)?;
-            log::info!("{:?}", write_txn);
-
-            let nsid = write_txn.commit()?;
-
-            sid = nsid;
-        }
-
-        let txn = db.read(sid)?;
-
-        check_index_10(txn)?;
-
-        Ok(())
-    }
+    /// MDBX backend implementation.
+    ///
+    /// MDBX is a fast, compact, powerful, embedded, transactional key-value database.
+    pub use crepedb_mdbx::MdbxDatabase;
 }

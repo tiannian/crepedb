@@ -4,7 +4,8 @@ use alloc::vec::Vec;
 
 use crate::{
     backend::{BackendError, ReadTable, ReadTxn, WriteTable, WriteTxn},
-    Error, Result, SnapshotId, Version,
+    types::{SnapshotId, Version},
+    Error, Result,
 };
 
 use super::consts;

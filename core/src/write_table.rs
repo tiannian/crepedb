@@ -2,7 +2,8 @@ use core::marker::PhantomData;
 
 use crate::{
     backend::{BackendError, WriteTable as BackendWriteTable},
-    Bytes, DataOp, Error, Result, SnapshotId, TableType, Version,
+    types::{Bytes, DataOp, SnapshotId, TableType, Version},
+    Error, Result,
 };
 
 /// A writable view of a table within a write transaction.
