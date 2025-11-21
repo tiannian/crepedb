@@ -19,7 +19,7 @@ impl ReadTxn<Error> for RocksdbReadTxn {
         Self: 'b;
 
     fn open_table(&self, table: &str) -> Result<Self::Table<'_>, Error> {
-        Ok(RocksdbReadTable { 
+        Ok(RocksdbReadTable {
             db: Arc::clone(&self.db),
             name: table.to_string(),
         })
@@ -38,15 +38,18 @@ mod tests {
             .duration_since(std::time::UNIX_EPOCH)
             .unwrap()
             .as_nanos();
-        let temp_dir = std::env::temp_dir().join(format!("crepedb-rocksdb-test-{}-{}", std::process::id(), timestamp));
+        let temp_dir = std::env::temp_dir().join(format!(
+            "crepedb-rocksdb-test-{}-{}",
+            std::process::id(),
+            timestamp
+        ));
         let backend = RocksdbDatabase::open_or_create(&temp_dir).unwrap();
 
         let result = crepedb_core::read_tests::test_read(backend);
-        
+
         // Clean up
         let _ = std::fs::remove_dir_all(temp_dir);
-        
+
         result.unwrap();
     }
 }
-
