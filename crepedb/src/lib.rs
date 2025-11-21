@@ -45,9 +45,9 @@ pub use crepedb_core::*;
 /// Core types used throughout CrepeDB.
 ///
 /// This module re-exports essential types from the core library, including:
-/// - [`SnapshotId`]: Unique identifier for database snapshots
-/// - [`Bytes`]: Byte array type used for keys and values
-/// - [`Version`]: Version number type for tracking changes
+/// - [`SnapshotId`](crate::types::SnapshotId): Unique identifier for database snapshots
+/// - [`Bytes`](crate::types::Bytes): Byte array type used for keys and values
+/// - [`Version`](crate::types::Version): Version number type for tracking changes
 pub mod types {
     pub use crepedb_core::types::*;
 }
@@ -55,7 +55,7 @@ pub mod types {
 /// Storage backend implementations.
 ///
 /// This module provides access to different storage backend implementations
-/// that can be used with CrepeDB. Each backend implements the [`Backend`] trait
+/// that can be used with CrepeDB. Each backend implements the [`Backend`](crepedb_core::backend::Backend) trait
 /// and provides its own database type.
 ///
 /// ## Available Backends
