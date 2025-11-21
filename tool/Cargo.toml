@@ -7,10 +7,6 @@ license.workspace = true
 repository.workspace = true
 readme.workspace = true
 
-[[bin]]
-name = "crepedb"
-path = "./src/tool.rs"
-
 [dependencies]
 anyhow = { version = "1.0.86", features = ["backtrace"] }
 clap = { version = "4.5.16", features = ["derive", "env"] }

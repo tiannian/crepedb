@@ -54,7 +54,7 @@ mod tests {
 
         let backend = RedbDatabase::memory().unwrap();
 
-        crepedb_core::utils::tests::test_db_10(backend).unwrap();
+        crepedb_core::tests::test_db_10(backend).unwrap();
     }
 
     #[test]

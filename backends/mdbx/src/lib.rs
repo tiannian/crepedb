@@ -57,7 +57,7 @@ mod tests {
 
         let backend = MdbxDatabase::open_or_create(&temp_dir).unwrap();
 
-        let result = crepedb_core::utils::tests::test_db_10(backend);
+        let result = crepedb_core::tests::test_db_10(backend);
 
         // Clean up
         let _ = std::fs::remove_dir_all(temp_dir);
