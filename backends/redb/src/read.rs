@@ -3,12 +3,12 @@ use redb::{Error, ReadTransaction, TableDefinition};
 
 use crate::RedbReadTable;
 
-pub struct RedbReadTxn<'a> {
-    pub(crate) inner: ReadTransaction<'a>,
+pub struct RedbReadTxn {
+    pub(crate) inner: ReadTransaction,
 }
 
-impl<'a> ReadTxn<Error> for RedbReadTxn<'a> {
-    type Table<'b> = RedbReadTable<'b> where Self: 'b;
+impl ReadTxn<Error> for RedbReadTxn {
+    type Table<'b> = RedbReadTable where Self: 'b;
 
     fn open_table(&self, table: &str) -> Result<Self::Table<'_>, Error> {
         let name = table.into();

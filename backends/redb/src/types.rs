@@ -1,13 +1,13 @@
 use crepedb::Bytes;
-use redb::{RedbKey, RedbValue};
+use redb::{Key, Value};
 
 #[derive(Debug)]
 pub struct BytesTy;
 
-impl RedbValue for BytesTy {
-    type AsBytes<'a> = <Bytes as RedbValue>::AsBytes<'a>;
+impl Value for BytesTy {
+    type AsBytes<'a> = <Bytes as Value>::AsBytes<'a>;
 
-    type SelfType<'a> = <Bytes as RedbValue>::SelfType<'a>;
+    type SelfType<'a> = <Bytes as Value>::SelfType<'a>;
 
     fn type_name() -> redb::TypeName {
         crepedb::Bytes::type_name()
@@ -33,7 +33,7 @@ impl RedbValue for BytesTy {
     }
 }
 
-impl RedbKey for BytesTy {
+impl Key for BytesTy {
     fn compare(data1: &[u8], data2: &[u8]) -> std::cmp::Ordering {
         data1.cmp(data2)
     }

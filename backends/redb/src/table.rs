@@ -6,12 +6,12 @@ use redb::{Error, ReadOnlyTable, ReadableTable, Table, TableHandle};
 
 use crate::{types::BytesTy, RedbRange};
 
-pub struct RedbReadTable<'txn> {
-    pub(crate) inner: ReadOnlyTable<'txn, BytesTy, BytesTy>,
+pub struct RedbReadTable {
+    pub(crate) inner: ReadOnlyTable<BytesTy, BytesTy>,
     pub(crate) name: String,
 }
 
-impl<'txn> ReadTable<Error> for RedbReadTable<'txn> {
+impl ReadTable<Error> for RedbReadTable {
     type Range<'c> = RedbRange<'c> where Self: 'c;
 
     fn name(&self) -> &str {
@@ -33,11 +33,11 @@ impl<'txn> ReadTable<Error> for RedbReadTable<'txn> {
     }
 }
 
-pub struct RedbWriteTable<'a, 'b> {
-    pub(crate) inner: Table<'a, 'b, BytesTy, BytesTy>,
+pub struct RedbWriteTable<'a> {
+    pub(crate) inner: Table<'a, BytesTy, BytesTy>,
 }
 
-impl<'a, 'b> ReadTable<Error> for RedbWriteTable<'a, 'b> {
+impl<'a> ReadTable<Error> for RedbWriteTable<'a> {
     type Range<'c> = RedbRange<'c> where Self: 'c;
 
     fn name(&self) -> &str {
@@ -59,7 +59,7 @@ impl<'a, 'b> ReadTable<Error> for RedbWriteTable<'a, 'b> {
     }
 }
 
-impl<'a, 'b> WriteTable<Error> for RedbWriteTable<'a, 'b> {
+impl<'a> WriteTable<Error> for RedbWriteTable<'a> {
     fn set(&mut self, key: Bytes, value: Bytes) -> Result<(), Error> {
         self.inner.insert(key, value)?;
 

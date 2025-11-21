@@ -12,7 +12,7 @@ crepedb = { workspace = true, features = ["tests"] }
 
 log.workspace = true
 
-redb = "1.5.0"
+redb = "3.1.0"
 
 [dev-dependencies]
 env_logger = "0.11.2"

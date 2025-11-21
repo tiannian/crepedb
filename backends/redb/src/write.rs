@@ -3,12 +3,15 @@ use redb::{Error, TableDefinition, WriteTransaction};
 
 use crate::RedbWriteTable;
 
-pub struct RedbWriteTxn<'db> {
-    pub inner: WriteTransaction<'db>,
+pub struct RedbWriteTxn {
+    pub inner: WriteTransaction,
 }
 
-impl<'db> WriteTxn<Error> for RedbWriteTxn<'db> {
-    type Table<'a> = RedbWriteTable<'db, 'a> where Self: 'a;
+impl WriteTxn<Error> for RedbWriteTxn {
+    type Table<'a>
+        = RedbWriteTable<'a>
+    where
+        Self: 'a;
 
     fn open_table(&self, table: &str) -> Result<Self::Table<'_>, Error> {
         let definition = TableDefinition::new(table);

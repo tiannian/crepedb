@@ -1,7 +1,7 @@
 use std::path::Path;
 
 use crepedb::backend::Backend;
-use redb::{backends::InMemoryBackend, Builder, Database, Error};
+use redb::{backends::InMemoryBackend, Builder, Database, Error, ReadableDatabase};
 
 use crate::{RedbReadTxn, RedbWriteTxn};
 
@@ -26,9 +26,9 @@ impl RedbDatabase {
 impl Backend for RedbDatabase {
     type Error = Error;
 
-    type ReadTxn<'a> = RedbReadTxn<'a>;
+    type ReadTxn<'a> = RedbReadTxn;
 
-    type WriteTxn<'a> = RedbWriteTxn<'a>;
+    type WriteTxn<'a> = RedbWriteTxn;
 
     fn read_txn(&self) -> Result<Self::ReadTxn<'_>, Self::Error> {
         let txn = self.inner.begin_read()?;

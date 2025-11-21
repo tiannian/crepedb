@@ -26,33 +26,62 @@ The first byte in value is table type. `1` means table is `Basic`. `2` means tab
 
 This table's key is made up by these parts:
 
-1. key
-2. version
-3. snapshot id
+1. key (variable length)
+2. version (u64, little-endian)
+3. snapshot id (u64, little-endian)
+
+The value is encoded with a data operation flag at the end:
+- `0x00`: Set operation, the value contains actual data followed by the flag
+- `0x01`: Del operation, only the flag is stored
+
+When reading a key, the system searches backward from the highest version/snapshot combination
+that is an ancestor of the current snapshot, ensuring snapshot isolation.
 
 ## Snapshot
 
-Snapshot ID is `u64`. `0` is `Preroot`, `1` is `Root`.
-Version is `u64`.
+Snapshot ID is `u64`. `u64::MAX` (0xFFFFFFFFFFFFFFFF) is `Preroot`, `0` is `Root`.
+Version is `u64`. Root snapshot has version `0`.
+
+When creating a new snapshot from an existing snapshot:
+- The new snapshot ID is automatically assigned incrementally (1, 2, 3, ...)
+- The new version is parent version + 1
+- The parent snapshot ID is stored for tracking the snapshot tree
 
 ### `Snapshot Table`
 
-This table use to store snapshot related property.
+This table stores snapshot-related properties.
+Snapshot Table uses name `__crepe_snapshot`.
 
-- Key: Snapshot ID
-- Value: Version, Parent Snapshot ID.
+Regular entries:
+- Key: Snapshot ID (u64)
+- Value: Version (u64) + Parent Snapshot ID (u64)
 
-Snapshot Table use name `__crepe_snapshot`.
+Special entry for ID allocation:
+- Key: `0xFFFFFFFFFFFFFFFF` (u64::MAX, same as Preroot)
+- Value: Next Snapshot ID to be allocated (u64)
+
+This special key tracks the next available snapshot ID to ensure unique ID allocation.
 
 ### `Snapshot Index Table`
 
-To build index, we use these expression.
+Snapshot Index Table stores skip-list-like indices to enable efficient ancestor traversal.
+It uses name `__crepe_snapshot_index`.
+
+- Key: Snapshot ID (u64) + Index Number (u32)
+- Value: Referenced Snapshot ID (u64)
+
+To build index, we use these expression:
 
 - `Vn`: Snapshot with version N.
 - `i(Va, b)`: Index `b` of Snapshot with version `a`.
-- `V0`: Root node.
+- `V0`: Root node (version 0).
 
-If snapshot have version `a`, it will have `i = ceil(log2(a))`.
+If snapshot has version `a`, it will have `i = ceil(log2(a))` indices stored in the index table.
+
+Note: Index 0 is conceptually the direct parent snapshot, but it's not stored in the index table. 
+Instead, it's stored in the Snapshot Table as the "Parent Snapshot ID". 
+Only indices 1, 2, 3, ... are actually stored in the Snapshot Index Table for skip-list optimization.
+Higher indices provide skip-list jumps for faster ancestor lookup.
 
 For example:
 
