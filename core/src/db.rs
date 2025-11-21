@@ -20,6 +20,16 @@ where
         Self { backend }
     }
 
+    /// Get a reference to the underlying backend.
+    pub fn backend(&self) -> &B {
+        &self.backend
+    }
+
+    /// Consume the database and return the underlying backend.
+    pub fn into_backend(self) -> B {
+        self.backend
+    }
+
     /// Create a transaction to read data.
     pub fn read(&self, snapshot_id: SnapshotId) -> Result<ReadTxn<B::ReadTxn<'_>, B::Error>> {
         let txn = self.backend.read_txn().map_err(Error::backend)?;

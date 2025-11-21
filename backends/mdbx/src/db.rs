@@ -39,6 +39,16 @@ impl MdbxDatabase {
 
         Ok(Self { inner: db })
     }
+
+    /// Get a reference to the underlying MDBX database.
+    pub fn inner(&self) -> &Database<NoWriteMap> {
+        &self.inner
+    }
+
+    /// Consume the database and return the underlying MDBX database.
+    pub fn into_inner(self) -> Database<NoWriteMap> {
+        self.inner
+    }
 }
 
 impl Backend for MdbxDatabase {

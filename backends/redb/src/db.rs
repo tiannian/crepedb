@@ -56,6 +56,16 @@ impl RedbDatabase {
         let db = Builder::new().create_with_backend(backend)?;
         Ok(Self { inner: db })
     }
+
+    /// Get a reference to the underlying redb database.
+    pub fn inner(&self) -> &Database {
+        &self.inner
+    }
+
+    /// Consume the database and return the underlying redb database.
+    pub fn into_inner(self) -> Database {
+        self.inner
+    }
 }
 
 impl Backend for RedbDatabase {
