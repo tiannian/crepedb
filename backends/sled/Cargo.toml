@@ -1,7 +1,0 @@
-[package]
-name = "crepedb-sled"
-version.workspace = true
-edition.workspace = true
-
-[dependencies]
-crepedb.workspace = true

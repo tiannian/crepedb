@@ -1,6 +1,18 @@
 [package]
 name = "crepedb-rocksdb"
-version = "0.1.0"
-edition = "2021"
+version.workspace = true
+edition.workspace = true
+description.workspace = true
+license.workspace = true
+repository.workspace = true
+readme.workspace = true
 
 [dependencies]
+crepedb-core = { workspace = true, features = ["tests"] }
+
+log.workspace = true
+
+rocksdb = { version = "0.24.0", default-features = false }
+
+[dev-dependencies]
+env_logger = "0.11.2"

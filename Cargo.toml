@@ -3,10 +3,10 @@ resolver = "2"
 members = [
   "crepedb",
   "backends/redb",
+  "backends/rocksdb",
   "tool",
   # "backends/sled",
   # "backends/mdbx",
-  # "backends/rocksdb",
 ]
 
 [workspace.package]
@@ -26,3 +26,4 @@ seq-macro = "0.3.5"
 
 crepedb-core = { path = "crepedb", version = "0.1" }
 crepedb-redb = { path = "backends/redb", version = "0.1" }
+crepedb-rocksdb = { path = "backends/rocksdb", version = "0.1" }
