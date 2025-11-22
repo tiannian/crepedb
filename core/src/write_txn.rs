@@ -16,13 +16,13 @@ pub struct WriteTxn<T, E> {
 
     /// The parent snapshot ID. None if this is the root snapshot.
     pub(crate) parent_snapshot_id: Option<SnapshotId>,
-    
+
     /// The snapshot ID being branched from.
     pub(crate) snapshot_id: SnapshotId,
-    
+
     /// The new snapshot ID that will be created on commit.
     pub(crate) new_snapshot_id: SnapshotId,
-    
+
     /// The version number for this transaction.
     pub(crate) version: Version,
 
@@ -49,21 +49,40 @@ where
     T: BackendWriteTxn<E>,
     E: BackendError,
 {
-    /// Create a new table with the specified type.
+    /// Create a new basic (non-versioned) table.
+    ///
+    /// Basic tables store data directly with no version tracking. Updates overwrite
+    /// previous values. This is more efficient for data that doesn't need version history.
     ///
     /// # Arguments
     ///
     /// * `table` - The name of the table to create
-    /// * `ty` - The type of table (Basic or Versioned)
     ///
     /// # Errors
     ///
     /// Returns an error if the table already exists or cannot be created.
-    pub fn create_table(&self, table: &str, ty: &TableType) -> Result<()> {
+    pub fn create_basic_table(&self, table: &str) -> Result<()> {
         let mut meta = utils::meta_writer(&self.txn)?;
+        meta.write_type(table, &TableType::Basic)?;
+        Ok(())
+    }
 
-        meta.write_type(table, ty)?;
-
+    /// Create a new versioned table with full history tracking.
+    ///
+    /// Versioned tables track all changes across snapshots. Each write creates a new
+    /// version entry. Reads can retrieve data from any snapshot in the version history.
+    /// This enables time-travel queries and branching.
+    ///
+    /// # Arguments
+    ///
+    /// * `table` - The name of the table to create
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the table already exists or cannot be created.
+    pub fn create_versioned_table(&self, table: &str) -> Result<()> {
+        let mut meta = utils::meta_writer(&self.txn)?;
+        meta.write_type(table, &TableType::Versioned)?;
         Ok(())
     }
 

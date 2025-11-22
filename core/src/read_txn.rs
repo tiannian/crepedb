@@ -64,7 +64,7 @@ where
 pub mod read_tests {
     use alloc::vec;
 
-    use crate::{backend::Backend, types::TableType, CrepeDB, Result};
+    use crate::{backend::Backend, CrepeDB, Result};
 
     pub fn test_read(backend: impl Backend) -> Result<()> {
         // let db: CrepeDB<B> = CrepeDB::open("/tmp/__crepedb/test_read")?;
@@ -75,7 +75,7 @@ pub mod read_tests {
 
         // Create root
         let rtxn = db.write(None)?;
-        rtxn.create_table(table, &TableType::Versioned)?;
+        rtxn.create_versioned_table(table)?;
         let root = rtxn.commit()?;
 
         // Create s1 on root
@@ -155,7 +155,7 @@ pub mod read_tests {
 
         // Create root
         let rtxn = db.write(None)?;
-        rtxn.create_table(table, &TableType::Versioned)?;
+        rtxn.create_versioned_table(table)?;
         let root = rtxn.commit()?;
 
         // Create branch 1 from root
@@ -208,7 +208,7 @@ pub mod read_tests {
 
         // Create root
         let rtxn = db.write(None)?;
-        rtxn.create_table(table, &TableType::Versioned)?;
+        rtxn.create_versioned_table(table)?;
         let root = rtxn.commit()?;
 
         // Write multiple keys
@@ -262,7 +262,7 @@ pub mod read_tests {
 
         // Create root
         let rtxn = db.write(None)?;
-        rtxn.create_table("existing_table", &TableType::Versioned)?;
+        rtxn.create_versioned_table("existing_table")?;
         let root = rtxn.commit()?;
 
         // Try to open non-existent table
@@ -279,9 +279,9 @@ pub mod read_tests {
 
         // Create root with multiple tables
         let rtxn = db.write(None)?;
-        rtxn.create_table("table1", &TableType::Versioned)?;
-        rtxn.create_table("table2", &TableType::Versioned)?;
-        rtxn.create_table("table3", &TableType::Versioned)?;
+        rtxn.create_versioned_table("table1")?;
+        rtxn.create_versioned_table("table2")?;
+        rtxn.create_versioned_table("table3")?;
         let root = rtxn.commit()?;
 
         // Write to different tables
@@ -321,7 +321,7 @@ pub mod read_tests {
 
         // Create root with Basic table
         let rtxn = db.write(None)?;
-        rtxn.create_table("basic_table", &TableType::Basic)?;
+        rtxn.create_basic_table("basic_table")?;
         let root = rtxn.commit()?;
 
         // Write to basic table
@@ -363,7 +363,7 @@ pub mod read_tests {
 
         // Create root
         let rtxn = db.write(None)?;
-        rtxn.create_table(table, &TableType::Versioned)?;
+        rtxn.create_versioned_table(table)?;
         let root = rtxn.commit()?;
 
         // Test empty value
@@ -408,7 +408,7 @@ pub mod read_tests {
 
         // Create root
         let rtxn = db.write(None)?;
-        rtxn.create_table(table, &TableType::Versioned)?;
+        rtxn.create_versioned_table(table)?;
         let root = rtxn.commit()?;
 
         // Create a long chain of snapshots, each adding a new key
@@ -445,7 +445,7 @@ pub mod read_tests {
 
         // Create root
         let rtxn = db.write(None)?;
-        rtxn.create_table(table, &TableType::Versioned)?;
+        rtxn.create_versioned_table(table)?;
         let root = rtxn.commit()?;
 
         // Branch 1: Write a key
@@ -500,7 +500,7 @@ pub mod read_tests {
 
         // Create root
         let rtxn = db.write(None)?;
-        rtxn.create_table(table, &TableType::Versioned)?;
+        rtxn.create_versioned_table(table)?;
         let root = rtxn.commit()?;
 
         // Create first snapshot with no data (just to establish snapshot chain)
@@ -550,7 +550,7 @@ pub mod read_tests {
 
         // Create root
         let rtxn = db.write(None)?;
-        rtxn.create_table(table, &TableType::Versioned)?;
+        rtxn.create_versioned_table(table)?;
         let root = rtxn.commit()?;
 
         // Write data
@@ -585,7 +585,7 @@ pub mod read_tests {
 
         // Create root
         let rtxn = db.write(None)?;
-        rtxn.create_table(table, &TableType::Versioned)?;
+        rtxn.create_versioned_table(table)?;
         let root = rtxn.commit()?;
 
         // Write some keys
@@ -625,7 +625,7 @@ pub mod read_tests {
 
         // Create root
         let rtxn = db.write(None)?;
-        rtxn.create_table(table, &TableType::Versioned)?;
+        rtxn.create_versioned_table(table)?;
         let root = rtxn.commit()?;
 
         // Parent snapshot with some data
@@ -673,7 +673,7 @@ pub mod read_tests {
 
         // Create root
         let rtxn = db.write(None)?;
-        rtxn.create_table(table, &TableType::Versioned)?;
+        rtxn.create_versioned_table(table)?;
         let root = rtxn.commit()?;
 
         // Base snapshot

@@ -7,8 +7,20 @@ license.workspace = true
 repository.workspace = true
 readme.workspace = true
 
+[features]
+default = ["backend-redb"]
+backend-redb = ["dep:crepedb-redb"]
+backend-rocksdb = ["dep:crepedb-rocksdb"]
+backend-mdbx = ["dep:crepedb-mdbx"]
+# Enable all backends for docs.rs documentation
+docsrs = ["backend-redb", "backend-rocksdb", "backend-mdbx"]
+
 [dependencies]
 crepedb-core = { workspace = true }
-crepedb-redb = { workspace = true }
-crepedb-rocksdb = { workspace = true }
-crepedb-mdbx = { workspace = true }
+crepedb-redb = { workspace = true, optional = true }
+crepedb-rocksdb = { workspace = true, optional = true }
+crepedb-mdbx = { workspace = true, optional = true }
+
+[package.metadata.docs.rs]
+all-features = true
+features = ["docsrs"]

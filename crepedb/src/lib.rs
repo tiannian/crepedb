@@ -15,7 +15,7 @@
 //! ## Example
 //!
 //! ```ignore
-//! use crepedb::{CrepeDB, SnapshotId, TableType};
+//! use crepedb::{CrepeDB, SnapshotId};
 //! use crepedb::backend::RedbDatabase;
 //!
 //! // Create a database with a backend
@@ -24,7 +24,7 @@
 //!
 //! // Create root snapshot
 //! let wtxn = db.write(None)?;
-//! wtxn.create_table("my_table", &TableType::Versioned)?;
+//! wtxn.create_versioned_table("my_table")?;
 //! let root = wtxn.commit()?;
 //!
 //! // Write data
@@ -78,15 +78,18 @@ pub mod backend {
     /// Redb backend implementation.
     ///
     /// Redb is a simple, portable, high-performance, ACID, embedded key-value database.
+    #[cfg(any(feature = "backend-redb", docsrs))]
     pub use crepedb_redb::RedbDatabase;
 
     /// RocksDB backend implementation.
     ///
     /// RocksDB is a high-performance embedded database for key-value data.
+    #[cfg(any(feature = "backend-rocksdb", docsrs))]
     pub use crepedb_rocksdb::RocksdbDatabase;
 
     /// MDBX backend implementation.
     ///
     /// MDBX is a fast, compact, powerful, embedded, transactional key-value database.
+    #[cfg(any(feature = "backend-mdbx", docsrs))]
     pub use crepedb_mdbx::MdbxDatabase;
 }

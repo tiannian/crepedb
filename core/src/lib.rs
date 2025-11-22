@@ -15,14 +15,14 @@
 //! ## Example
 //!
 //! ```ignore
-//! use crepedb::{CrepeDB, SnapshotId, TableType};
+//! use crepedb::{CrepeDB, SnapshotId};
 //!
 //! // Create a database with a backend
 //! let db = CrepeDB::new(backend);
 //!
 //! // Create root snapshot
 //! let wtxn = db.write(None)?;
-//! wtxn.create_table("my_table", &TableType::Versioned)?;
+//! wtxn.create_versioned_table("my_table")?;
 //! let root = wtxn.commit()?;
 //!
 //! // Write data
