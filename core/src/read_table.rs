@@ -66,7 +66,7 @@ where
         begin.extend_from_slice(&0u64.to_le_bytes());
         begin.extend_from_slice(&SnapshotId::root().to_bytes());
 
-        end.extend_from_slice(&u64::MAX.to_le_bytes());
+        end.extend_from_slice(&self.version.0.to_le_bytes());
         end.extend_from_slice(&SnapshotId::preroot().to_bytes());
 
         let mut iter = self.table.range(begin, end).map_err(Error::backend)?;
